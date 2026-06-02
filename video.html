@@ -3,9 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Room</title>
+    <title>Video - MoodSpace</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS v3 CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style data-purpose="custom-colors">
+        :root {
+          --yt-black: #0f0f0f;
+          --yt-dark-gray: #272727;
+          --yt-hover-gray: #3f3f3f;
+          --yt-text-gray: #aaaaaa;
+        }
+        .yt-content {
+          background-color: var(--yt-black);
+          color: white;
+          font-family: "Roboto", Arial, sans-serif;
+          margin-top: 20px;
+          padding-top: 10px;
+        }
+    </style>
+    <style data-purpose="scrollbar-styling">
+        /* Hide scrollbar for category chips */
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -18,10 +45,205 @@
             </ul>
     </nav>
 
-    <div class="container-video">
+    <!-- YouTube-Style Content -->
+    <div class="yt-content">
+        <div class="flex">
+            <!-- Left Sidebar -->
+            <aside class="w-60 fixed left-0 h-[calc(100vh-120px)] overflow-y-auto px-3 hidden lg:block" style="top: 80px;" data-purpose="sidebar-navigation">
+                <div class="flex flex-col gap-1 py-3 border-b border-[#303030]">
+                    <!-- Active Home Link -->
+                    <a class="flex items-center gap-5 px-3 py-2 bg-[#3f3f3f] rounded-lg hover:bg-[#4f4f4f]" href="#">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg>
+                        <span class="text-sm font-medium">Home</span>
+                    </a>
+                    <a class="flex items-center gap-5 px-3 py-2 rounded-lg hover:bg-[#272727]" href="#">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 14.65v-5.3L15 12l-5 2.65zm7.75-3.47l-1.55-.89.67-1.76c.76-2.01-.28-4.21-2.3-4.97-2.01-.76-4.21.28-4.97 2.3l-.67 1.76-1.55-.89c-1.34-.77-3.05-.31-3.82 1.03-.77 1.34-.31 3.05 1.03 3.82l1.55.89-.67 1.76c-.76 2.01.28 4.21 2.3 4.97 2.01.76 4.21-.28 4.97-2.3l.67-1.76 1.55.89c1.34.77 3.05.31 3.82-1.03.77-1.34.31-3.05-1.03-3.82zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"></path></svg>
+                        <span class="text-sm">Shorts</span>
+                    </a>
+                    <a class="flex items-center gap-5 px-3 py-2 rounded-lg hover:bg-[#272727]" href="#">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.7 8.7H5.3V7h13.4v1.7zm-1.7-5H7v1.6h10V3.7zm3.3 8.3v6.7c0 1-.8 1.7-1.7 1.7H5.7c-.9 0-1.7-.8-1.7-1.7V12c0-1 .8-1.7 1.7-1.7h12.6c1 0 1.7.8 1.7 1.7zm-1.7 0H5.7v6.7h12.6V12zM8.5 17.1V13l4.2 2.1-4.2 2z"></path></svg>
+                        <span class="text-sm">Subscriptions</span>
+                    </a>
+                </div>
+                <div class="flex flex-col gap-1 py-3 border-b border-[#303030]">
+                    <a class="flex items-center gap-5 px-3 py-2 bg-[#3f3f3f] rounded-lg hover:bg-[#4f4f4f]" href="#">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"></path></svg>
+                        <span class="text-sm">Library</span>
+                    </a>
+                    <a class="flex items-center gap-5 px-3 py-2 rounded-lg hover:bg-[#272727]" href="#">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"></path></svg>
+                        <span class="text-sm">History</span>
+                    </a>
+                    <a class="flex items-center gap-5 px-3 py-2 rounded-lg hover:bg-[#272727]" href="#">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6zM24 0v24H0V0h24zM1 1h22v22H1V1z"></path></svg>
+                        <span class="text-sm">Your Videos</span>
+                    </a>
+                    <a class="flex items-center gap-5 px-3 py-2 rounded-lg hover:bg-[#272727]" href="#">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
+                        <span class="text-sm">Watch Later</span>
+                    </a>
+                    <a class="flex items-center gap-5 px-3 py-2 rounded-lg hover:bg-[#272727]" href="#">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"></path></svg>
+                        <span class="text-sm">Liked Videos</span>
+                    </a>
+                </div>
+            </aside>
 
-        <div id="dynamic-video-container">
-            <p style="text-align: center;">Memuat video...</p>
+            <!-- Main Content Area -->
+            <main class="lg:ml-60 w-full">
+                <!-- Category Chips -->
+                <nav class="sticky top-0 bg-[#0f0f0f] z-40 px-4 py-3" data-purpose="category-filters">
+                    <div class="flex gap-3 overflow-x-auto no-scrollbar whitespace-nowrap">
+                        <button class="px-3 py-1.5 bg-white text-black rounded-lg text-sm font-medium hover:bg-neutral-200">All</button>
+                        <button class="px-3 py-1.5 bg-[#272727] text-white rounded-lg text-sm font-medium hover:bg-[#3f3f3f]">Music</button>
+                        <button class="px-3 py-1.5 bg-[#272727] text-white rounded-lg text-sm font-medium hover:bg-[#3f3f3f]">Gaming</button>
+                        <button class="px-3 py-1.5 bg-[#272727] text-white rounded-lg text-sm font-medium hover:bg-[#3f3f3f]">News</button>
+                        <button class="px-3 py-1.5 bg-[#272727] text-white rounded-lg text-sm font-medium hover:bg-[#3f3f3f]">Live</button>
+                        <button class="px-3 py-1.5 bg-[#272727] text-white rounded-lg text-sm font-medium hover:bg-[#3f3f3f]">Podcasts</button>
+                        <button class="px-3 py-1.5 bg-[#272727] text-white rounded-lg text-sm font-medium hover:bg-[#3f3f3f]">Recently Uploaded</button>
+                        <button class="px-3 py-1.5 bg-[#272727] text-white rounded-lg text-sm font-medium hover:bg-[#3f3f3f]">New to you</button>
+                    </div>
+                </nav>
+
+                <!-- Video Grid -->
+                <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4 pb-8" data-purpose="video-feed">
+                    <!-- Video Card 1 -->
+                    <div class="flex flex-col gap-3 cursor-pointer group">
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                            <img alt="Thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKogvHxDx_-WTcp9Ys8j-CWa8LDGyTPX4pKt9zVPhwOEDf5n_JqTltOvFVMJNYOCXYqL9HRuWcPZG5jaIpT2dqp_3lkAlJRmxNln89dtY0deqDnHgx84_fzzHIOAkH7SiT7WSuDHfOUlhIkpw-23hUu8Z_q86ahdFHkiM2F13P6VL7bWFJoCqqd3xNoRz3x8b2gQ2jeFTfgB6X6IGVbrzSrSenhKxuMX9u6l1d4hQpBQLTSSDSvl5uLhhMBp-oGABDq3D03FPEdDk"/>
+                            <span class="absolute bottom-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 text-xs font-medium rounded">13:35</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <img alt="Avatar" class="w-9 h-9 rounded-full shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgogAHapGHCsztW8VouMWsw-YxHI9jRleTcbJOQ94O0v8wYYt2Hg9xd1eG7EihL10xH5ai1TmFxMpI7OXbz19_isP9RNQLVu0-jTwrjmDyckjlwbR9btXXHzfQ9SGs2P7kxLAzEoTzMUz-rF8zMZX8WRo5swUp8Ij9odulvsBJix_9nrjE5OetyOxGGCl-hL-HRqdt_XR5y0SNOvLj_7_5xs7LJC3Aec5OCZbNy7KJkgI3w50TQzI062yZERP4cll2Dck2zus3F88"/>
+                            <div class="flex flex-col gap-1 pr-4">
+                                <h3 class="text-sm font-bold leading-tight line-clamp-2">Exploring Tokyo's Hidden Gems</h3>
+                                <div class="text-xs text-[#aaaaaa] flex items-center gap-1">
+                                    Channel Jax
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>
+                                </div>
+                                <div class="text-xs text-[#aaaaaa]">2.4M views • 1 day ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Video Card 2 -->
+                    <div class="flex flex-col gap-3 cursor-pointer group">
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                            <img alt="Thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDomQ7Bihu3zBZajUCjBclpd_0XYvNBa0VAr_sszizD-jxf1aOol346mqiHb4wyd64BK4cTK29ELHkeaDWuCkdE_XjB8bWgoqmzvRglCkeWDFQlMrlcPRXiVj9KQnFgdDFZQgL1uKcW-AfhqUf0CVaPQZ2gHESasAoUrGwseEiWrxwQwAp6ILdQaMB5E-_jf2LANx9FTlTKtFAqAKq-OSBh_NJYGikjp6tj0B6KgDcZkSjHhSEex1ajqwyDszBtFkwmuNajiKYq0VA"/>
+                            <span class="absolute bottom-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 text-xs font-medium rounded">13:56</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <img alt="Avatar" class="w-9 h-9 rounded-full shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDomU9fmh29_9T7dfJ2XuaFF_ZwAHelDMHxOoofGWmbwYNpHZpyi5NcwYFJdGFCwzukcz7-rNB88geaXENUbh0iewueh1ruqddr4sTNmjDrN4XWhP6r8aW5stAp7KFsCqRUc_ofELWBkDBiGAHaTIksirJ9nsH1QIdhs2dniG7sLTqK4czgAF_LdFaO2QyiiLFI_-2ckZEHMn0vzWJpFYIxigRTfbrV6Huo9gCi-9rqvieboKuyfCYZxF8GSUMIiQMEdy-0vJrIG6A"/>
+                            <div class="flex flex-col gap-1 pr-4">
+                                <h3 class="text-sm font-bold leading-tight line-clamp-2">Travel Vlog: Finding Peace in Nature</h3>
+                                <div class="text-xs text-[#aaaaaa]">Travel Vlog</div>
+                                <div class="text-xs text-[#aaaaaa]">2.4M views • 1 day ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Video Card 3 -->
+                    <div class="flex flex-col gap-3 cursor-pointer group">
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                            <img alt="Thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjm9rFPeiy1ZC_yfqaYz2KAkzuJUduupCTkbzFWiou4Fydx8urBJD_DjdGxHuMIuyi_GiS_vSVYyFVjcWSVUV03VU_wFG0jfCFeWLrxHlWDlqbFDWys5NkgQVaDmqxi_oSNwLFXKmFF0tfDug_D6-MKnRW73I1hSbufhnAEOLkaT2pJ_1eQBFP3enZDXV2cijY3E94AeAnnm8GVW_rDSPhgulpuF0Hgd501AKBgFg6GWKj0IExoqGGK-UJKdkNeOkD-Of1CfYos1o"/>
+                            <span class="absolute bottom-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 text-xs font-medium rounded">13:12</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <img alt="Avatar" class="w-9 h-9 rounded-full shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBw499d9B81G56_ckHWMnUmrEuApq643hZqodSTBK3F7Y71I95Xlbgd8qRKSCohRJOYu2EPQe7LJywYqiT-QBQvcd4r4DxjJlpekdaLgtICnUP99PFHoexASBte6X8Ky2H7zUleljDaPTxyXXUVDkssfRbSv-yrnZ8IsOzxnFhPri7IEayDhGGeC1cizxt-BRL9_L_brNZzS_0GCGIJUlDJl_kuAJCIrItAonjPTnAig31UW34674qtnnRcgiAeVX-DF2DJXkowygE"/>
+                            <div class="flex flex-col gap-1 pr-4">
+                                <h3 class="text-sm font-bold leading-tight line-clamp-2">Exploring Warsaw's Best Kept Secrets</h3>
+                                <div class="text-xs text-[#aaaaaa] flex items-center gap-1">
+                                    Channel 2ur
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>
+                                </div>
+                                <div class="text-xs text-[#aaaaaa]">1.3M views • 1 month ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Video Card 4 -->
+                    <div class="flex flex-col gap-3 cursor-pointer group">
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                            <img alt="Thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEja-oGeFXY62Fq-SWwM0-5RaSkUxC5RhKNZegX1fSv2y9HEOLwexnbBI7xFojtA7zLy86SM46vAGFXGpUO1FV_XKBpHX73FsQKtpR3s_IIYvWjnO6KC0zRqGzCbB-9x1iqbFrFddAf8Qi0X-Or7uGddaMCLhhS64oVsHYNd7GNoLcvxW2BIbfGM6P-BJtgMSzOtzIu7k61bXJ4gr4sI6bCMeAJp_u-NK_xzh4rXhylsj9-XW-HkuHVkR86se3giZ-LKsYIM-1jEk"/>
+                            <span class="absolute bottom-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 text-xs font-medium rounded">10:26</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <img alt="Avatar" class="w-9 h-9 rounded-full shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmqm5S0fdTtNjxx6I8soO96ghwAkpqcvXxIzgfjDCkpnJBpOfy4wHwB1o9_Dpz4IzvhL4BXw9BJ7IK2lIKJk720fwaFlv9m1Ulyz7CB1YMt5gX-1MQM7WuYUTJSwxaguBhEQKn3KhMby5uFEFugYC5QDmuqCw3GLBhUkPxEewKC6YvxYHZ7uTRX8BLLCavosLEQ_TiHVvKNN0FnmbFtheaTS8RALOPSDeSu_G1I1LKsfdBXq4YFiFv2MCDg-e3Lqa4Bv4A_PNdZFo"/>
+                            <div class="flex flex-col gap-1 pr-4">
+                                <h3 class="text-sm font-bold leading-tight line-clamp-2">The Hidden Eurretis - rivol</h3>
+                                <div class="text-xs text-[#aaaaaa]">Juntan Kame</div>
+                                <div class="text-xs text-[#aaaaaa]">1.5M views • 1 month ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Video Card 5 -->
+                    <div class="flex flex-col gap-3 cursor-pointer group">
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                            <img alt="Thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqnzLfYbEy0_WE4wPcCR9llX2DJgQfLD6dExo6S_tux24tZ_sbzX3A3NNAccDa3b1axhRYnHFmGTzYo_PpUqQRH6M7UZbS4N3ljYMOdnOnc1OetxHg-8panUl4in8B6EkAoh46mNcrksPBwmJ0EmZjBALUUslQLNfWyjarsLgkFLyB_0X8lD0F1UmpCgejIs6UEMCRPkQHL3PmgXA6n_QVGFLzTsuIREvFO-VHnFlJTy0gNsvw1VbVlLca2jVCR8EoAXEpN-Cg1sU"/>
+                            <span class="absolute bottom-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 text-xs font-medium rounded">18:57</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <img alt="Avatar" class="w-9 h-9 rounded-full shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9ShCWEZIYNIMKg6cnu8ZgHS61lFdmqQtmhSjNZz2mEIvxdPoQZNE-wBwQB-ettAHLdN-iLyXaMZzCXX-3I3gvPZM3aiLs4Nmmm1sAJQdRbnKGekKyE8ozUwxo4JpEz1v6yw_M3LWiRBSukREbtZAehrMgs4IL6aCZrsfnsOzR7rarSpsV2qqtV6Ec6M8BSsHEfeb63mQ0QUq4tmciqPqJJy2aXTmS6zC6ACDWjXfN3baDwSylaHiBAKwig-I5hO3rGdZeJVSWuBE"/>
+                            <div class="flex flex-col gap-1 pr-4">
+                                <h3 class="text-sm font-bold leading-tight line-clamp-2">Exploring Tokyo's Hidden Gems</h3>
+                                <div class="text-xs text-[#aaaaaa] flex items-center gap-1">
+                                    Channel Fan
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>
+                                </div>
+                                <div class="text-xs text-[#aaaaaa]">2.4M views • 1 day ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Video Card 6 -->
+                    <div class="flex flex-col gap-3 cursor-pointer group">
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                            <img alt="Thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3kUJXgQpTI4PeBCKcX35aUElvttGfTWq1xlYrzZfJboGG1KTFp89554WPtH2ryR30YpLXo4pXR-Z9Sut4nvER3wxiLrYIvOoW9oEtjgfX0EstjdyiTxg-DlxsWbeYJ2t8yh8M8C1IlSD0lC2Ab3QT-Z1Lm2ageTSAO0T7vdzz3s1T5KPQnG87RlybkPW_RmzR8Xhu7FzKessZcewkSr8Ahv5bbshfr69cKWLHtvsRniPvfI8lZGtBbTVgRuqBmE7JaQyQvrNji6w"/>
+                            <span class="absolute bottom-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 text-xs font-medium rounded">13:50</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <img alt="Avatar" class="w-9 h-9 rounded-full shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2NRDhvEgZZOfPGqlLo2Y94RMfgv2NalzsfAfMRiarUPJC6T9aEclt5Xp2r1fDQdOue0_YKrepP0g_gQPV3GOmvBhnVCcV9Cdd6edwbz_qIyPSxRswI7LEwVTLbb9xpAUjEft9xG8hGKHYaNzDrYNAK0e8I5m627gPNT6dOGaIuaxT6dKjxbpIFHHtxRzXc6J4yrf2zb4i-Bu_SynOYV09civLfxetqSzM-jKOhyeSGskAADd5b-GIwWxfDuyeI9yRnb-IrdvILac"/>
+                            <div class="flex flex-col gap-1 pr-4">
+                                <h3 class="text-sm font-bold leading-tight line-clamp-2">Find Nostic tralation team Ruma</h3>
+                                <div class="text-xs text-[#aaaaaa] flex items-center gap-1">
+                                    Channel time
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>
+                                </div>
+                                <div class="text-xs text-[#aaaaaa]">1.5M views • 1 day ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Video Card 7 -->
+                    <div class="flex flex-col gap-3 cursor-pointer group">
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                            <img alt="Thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwDwgKmRMa98d7FxBXCGZzzNhayLfSd-p9Sqv51580awDFZG1iPgwKXBXOdq3BydfdSI6JxqL9ryKDszG7razkyRuVGYhZIfe40qLiPmkogmH9vBUJYIw27WIBoBuc4pKselI5TRrsCeGxqDDAdrXlSp5orPkUOAmWLm70RgvrndZg1UXGSWa6X6Eu1tEXSFZC8lIFZZjVmWIdKsW-pbAhs8e5w1VCXX2Cw9d5xT8CVqJXceiJU_3sZtMVaae3MZbHttRK74P-2AY"/>
+                            <span class="absolute bottom-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 text-xs font-medium rounded">18:32</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <img alt="Avatar" class="w-9 h-9 rounded-full shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3eRikHeS8JAwiioTn19pnzPiXggWxm5tnyiyCCEUohRmfOtPIoq4__XYxcBLl87QBTImPIbpsoA6DzV94O6RBE21Yeg7osyD4s0EC4KQeTYPYriHUQE-yK4PMoF1vqJtiVpvtDtRe_eby_lneFOUr98QYxAt3a7YrQr480kKn-V_UJPo7aGlVJdueuVdXLbI-rF0CgF_dx3iwprHtUvtKwO4ZFyDYxYW2KSmu5d4yoceNqhczU1V-xZdBAmTJcomcjGZHylQIo5I"/>
+                            <div class="flex flex-col gap-1 pr-4">
+                                <h3 class="text-sm font-bold leading-tight line-clamp-2">Exploring Tokyo's Hidden Gems</h3>
+                                <div class="text-xs text-[#aaaaaa] flex items-center gap-1">
+                                    Channel Fan
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>
+                                </div>
+                                <div class="text-xs text-[#aaaaaa]">2.4M views • 1 day ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Video Card 8 -->
+                    <div class="flex flex-col gap-3 cursor-pointer group">
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-neutral-800">
+                            <img alt="Thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbcLyRCL6GsS1MOFyYe8L5wvYjxKLCRfZDcz4bN59RvjIxqsjCSzcTfbCc-EGaNfmwmaR9z2La-Koa4E37to_ZjGoYP1rCqsciZ-uxK-kIDsOtaDg3_DpF4JiJ94N3glJJRa2ua-UzlIw0-7dSq3TQCxYGhFAyVa_ZohUkdO3PB8Ef0K0mAWuS-qhmwhPrk87-xFnL_M5Z-ILzU30YwfZYUMCpH7jef2oBJLWb7jSPY_VPh33ger7C_JsvTGHsqgPlmn5A9G3hBUo"/>
+                            <span class="absolute bottom-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 text-xs font-medium rounded">18:52</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <img alt="Avatar" class="w-9 h-9 rounded-full shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS4nF9WolXN8EjNem8bPhjrlspS4HVDRqz_fkANG5ve5UopllytLFBmEBdtTVsQpKeOmZ7xRP2taozBOa21xEumqbWzMpDDYVq5kwLb9H1_3zA8cOXEQwZiLKudiPLqY26YDlhfpMZD61UpJalNy_6FePH2-MNTZOPGYxWtUWmQkrHboqtnWRtBiB85zAe2DB8Rdjwtymie_q16mCUCocdSU-7IgJSZmEk9TSk38iJX4dK5gfn4dehtK10I_vNg_Q0cbaaj3lnwMA"/>
+                            <div class="flex flex-col gap-1 pr-4">
+                                <h3 class="text-sm font-bold leading-tight line-clamp-2">Exploring Tokyo's Hidden Gems</h3>
+                                <div class="text-xs text-[#aaaaaa]">Travel Vlog</div>
+                                <div class="text-xs text-[#aaaaaa]">2.4M views • 1 day ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
         </div>
     </div>
 

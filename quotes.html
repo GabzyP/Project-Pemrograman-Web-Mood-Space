@@ -3,9 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memories</title>
+    <title>Quotes - MoodSpace</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS v3 CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style data-purpose="custom-layout">
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+        .masonry-grid {
+          columns: 2;
+          column-gap: 12px;
+        }
+        @media (min-width: 640px) { .masonry-grid { columns: 3; } }
+        @media (min-width: 768px) { .masonry-grid { columns: 4; } }
+        @media (min-width: 1024px) { .masonry-grid { columns: 5; } }
+        @media (min-width: 1280px) { .masonry-grid { columns: 6; } }
+        .masonry-item {
+          break-inside: avoid;
+          margin-bottom: 12px;
+        }
+        .active-chip {
+          background-color: black !important;
+          color: white !important;
+        }
+        .pinterest-content {
+          margin-top: 20px;
+          padding-top: 10px;
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -18,8 +52,139 @@
             </ul>
     </nav>
 
-    <div class="container-quotes">
-        <div id="dynamic-quotes-container"></div>
+    <!-- Pinterest-Style Content -->
+    <div class="pinterest-content">
+        <!-- Search Bar -->
+        <div class="px-4 mb-4">
+            <div class="max-w-3xl mx-auto relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                </div>
+                <input class="w-full bg-gray-100 hover:bg-gray-200 border-none rounded-full py-3 pl-10 pr-4 focus:ring-4 focus:ring-blue-100 transition-all duration-200" placeholder="Cari quotes inspiratif..." type="text"/>
+            </div>
+        </div>
+
+        <!-- Category Chips -->
+        <div class="px-4 mb-4" data-purpose="category-navigation">
+            <div class="flex items-center gap-4 overflow-x-auto no-scrollbar pb-2">
+                <button class="active-chip px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap">Explore</button>
+                <button class="bg-transparent hover:bg-gray-100 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap">Motivasi</button>
+                <button class="bg-transparent hover:bg-gray-100 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap">Cinta</button>
+                <button class="bg-transparent hover:bg-gray-100 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap">Kehidupan</button>
+                <button class="bg-transparent hover:bg-gray-100 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap">Persahabatan</button>
+                <button class="bg-transparent hover:bg-gray-100 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap">Sukses</button>
+                <button class="bg-transparent hover:bg-gray-100 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap">Kebahagiaan</button>
+                <button class="bg-transparent hover:bg-gray-100 px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap">Filosofi</button>
+            </div>
+        </div>
+
+        <!-- Masonry Feed -->
+        <main class="px-4">
+            <div class="masonry-grid" id="main-masonry-feed">
+                <!-- Item 1: Tall Nature -->
+                <div class="masonry-item">
+                    <div class="relative group cursor-zoom-in">
+                        <img alt="Nature landscape" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBo5e7ke7q4aanlw2hnvw0gWjBYQ4FlispiAKyudM2znHXIZmt5h78RYlKQg1JA4_FFWJR7NUCmfetohiMCKXYQ3SxUAsJ3WfZhD64F9ZjIfIBIxcaov5_G1j_UyAdXQU8nPofPb_JcoequB-nFEyZVXdQpUD5SBm1EEyiLz5eEjaKll8hqAi-NdcAd5G9YluTcrL8I5LbgP3KkB67Al70ebpsK4HaWQQVQYKnvodqKWJXZv3eN9IxMkCsn3Uh7mTBwc6VIMNaeuRc"/>
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity flex flex-col justify-between p-4">
+                            <div class="flex justify-end">
+                                <button class="bg-red-600 text-white px-4 py-2 rounded-full font-bold">Save</button>
+                            </div>
+                            <div class="flex justify-between items-center text-white">
+                                <span class="text-xs font-semibold truncate max-w-[120px]">moodspace.com</span>
+                                <div class="flex gap-2">
+                                    <button class="w-8 h-8 bg-white/90 text-black rounded-full flex items-center justify-center hover:bg-white"><i class="fa-solid fa-arrow-up-from-bracket text-xs"></i></button>
+                                    <button class="w-8 h-8 bg-white/90 text-black rounded-full flex items-center justify-center hover:bg-white"><i class="fa-solid fa-ellipsis text-xs"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Item 2: Architecture -->
+                <div class="masonry-item">
+                    <div class="relative group cursor-zoom-in">
+                        <img alt="Modern house" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGxRx2S96InuW7Y2Sjzgkz8GHnGfpQcLMDzDQAP1AJ49xe_twhBHD_JKx-qzV2gd9rB66LRkI5vy8BH-Hrn2Npy1GOsI7Af9ySKYUpEA3ZuCJQVthZBTf7uC1AlhQxD1boi0MLuvDuF0-pDZNs8bY9zN9lTgq1U0UeucyV__k3Uiy1jrtyHIdYUiS_-oTbOmZH-t8MgjDERKoXt3S7YqbftlaXiz3fcH2JY5WWBXckyRw0XZk_w9mZVw9RuUzklCVSFKDIQviekjs"/>
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity flex flex-col justify-between p-4">
+                            <div class="flex justify-end"><button class="bg-red-600 text-white px-4 py-2 rounded-full font-bold">Save</button></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Item 3: Portrait -->
+                <div class="masonry-item">
+                    <img alt="Portrait" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhj4xZI0e1O_WyPhsmQCvCvNBfvPKiiAayHgr7WnEKid2dnfo8ir1wgz3bG27wz5VoZ8omx4RjMW8uVnu0iPu-ZtCFJEE_9BmoljQbWy0Y8vFyruJlSnpRNqqND12auG6xLoPXDw8MJV2RwP09XNVdQ6GePqoI30S72MesCnCq-np1iP5yjn-vev2wSaq1-khCA0utxWMhUZ3sqfYMJqiGHgSgy9z358gOF1InBPmEsDxV8pCRo9F_CY3Ad3VTq_uDW5oDvxqRAW0"/>
+                </div>
+                <!-- Item 4: Cabin Hover State -->
+                <div class="masonry-item">
+                    <div class="relative cursor-zoom-in">
+                        <img alt="Cabin in woods" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsmNa1n2kdRpis5jgHRzcRcdJikDMNmlH6Fya7KR8QhUbnuQCNxgOmaajClHhD5qkk-kknHNlkJz_orAqfRfaPUOx_BG4xSi-zLqpi8Z91AKuCQUe0X-6ksg-ddIwGnCaTbPejuwBjz5S1l-LdP4LHf-EPxrHFEV3_pYafFy49cjUGLGB60PT5JF9_mMJicxHwJetV_RfEOso68ye98p-8UW3fkP8c0ZW6AAf0VbK-VTOWgb4cpWhiIeJ-i1X1JN7M2CnPGMxh984"/>
+                        <!-- Active overlay -->
+                        <div class="absolute inset-0 bg-black/40 rounded-2xl flex flex-col justify-between p-4">
+                            <div class="flex justify-end">
+                                <button class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-full font-bold transition-transform active:scale-95">Save</button>
+                            </div>
+                            <div class="flex justify-between items-center text-white">
+                                <div class="flex items-center gap-1">
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                                    <span class="text-xs font-semibold">moodspace.com</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button class="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:bg-gray-100"><i class="fa-solid fa-arrow-up-from-bracket text-xs"></i></button>
+                                    <button class="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:bg-gray-100"><i class="fa-solid fa-ellipsis text-xs"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 ml-1 text-xs text-gray-500 font-medium">Saved from <span class="font-bold">moodspace.com</span></div>
+                </div>
+                <!-- Item 5: Food Top View -->
+                <div class="masonry-item">
+                    <img alt="Food dish" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFUqfDe4SmO-1m79-Bgy6taUGZqfelvCA4DupnSgmGaGSRQAGgEYsLlS1N293JJgIQeyIt77OI-LGmshWyJTOK_gztwbAm8NQtxI3-cPCgjj2dS7G-MlyRojpQ3ByC8Zir5G-uYspwJ9JIx5l9lw0Plc3VpGSH2z356G7s25-UBMVjplEbb3FzpauGsUkZvUGy14lnYto4sI5hHFfMr3ogINR2NGHq9Hc7dCltzuzlvSBfFa3_c6gcsDB17jcYc2lP8aXrZ9sMs48"/>
+                </div>
+                <!-- Item 6: Graphic Design -->
+                <div class="masonry-item">
+                    <img alt="Graphic cards" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS2r7DB9KJ7CIBFJOuJFgh0cKhBnmBNoamI0NRTHZ-2SeNVNa9fJZ9Ahl1oICszyXBOBO4kysBciMSYHmJIviwEgq0mJ_6Ca-Yzk3JB-qyXV-p7iwv8AkabDdsjkjuBMyl95sIfevtb7P9yGESzL-bftWNctQxnhKJKfszYPv_0GpRqMV6Tp2qG-yQhEHCdK6W3y2GqMbAIoUR5TS9bxQVfrgiEUQ10xGAU7LR16VGIdMkpwB8FsU2oDnH4K45SskmjRBaylkNEnM"/>
+                </div>
+                <!-- Item 7: Woman in Yellow -->
+                <div class="masonry-item">
+                    <img alt="Woman in yellow" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD34WkvSsh4QaSBzxiUyJzYypBBjpVvKLB_0rQ4Z6CNXQBqHjKzEvN4JfYrdUMxCOLyn5TrzOgQXRKL_dugpshslHENirmOwPl5_kLmc6d-vaDZLkMhhjr6Smc8Kxe4tlqBIXpRXtLko7zBWf0lcwxQJ1gsqK8rbqMzllvSWtLSt00V8o2LXLgLKB8VlVGqLGKHW-6_EZL081FRkrDGf79mybgmodQl4nkGnJPrIg5-M8A08joXvTBPXLVgK2dKtR5Dw7G8zFrERvQ"/>
+                </div>
+                <!-- Item 8: Pasta Dish -->
+                <div class="masonry-item">
+                    <img alt="Pasta bowl" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCn7Eg_1lu42c17IP2kQMaqdKPMi4hCf5N5Ah1VDPXAw0P3UrOornkyds4Dr5jw7eMs2X_e8hlJtQCjZODOMduZwC9L7-pwxisID-n1vOUjbx85fYQ2prlx3zsEQyHy2AcucSSqDZeJGwWtslkwtRl6qqiO3EAY43Jlo7UUiAE9tHh6z5EtRHd3_N5ivoknLlhiPusUVaRJcYa3ZmKLqTlvWr7qi0RaYba6JM7kH5AXpKhSz9pbPz0Lq0be_RqiUEjWUFoQGojyGdQ"/>
+                </div>
+                <!-- Item 9: Landscape Lake -->
+                <div class="masonry-item">
+                    <img alt="Lake mountains" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuXkn8cvM_f8d0eOYNZsK3YCqp1y2gJPmXMbqDTqnn0GmK2w2mUmRxb4N6-nBcfnNmXHGoWjPsenUYomfbWRed7MHWsRobfYVtAUCylQCrg1EWlrflQ4Bulcvb8DvmqmtKjrXnXX-WlOt8-BUtr2bUu-yyYKg7YzV0USi0OBlYjGmxT5D9aS5U3RYD8OGzC_66DPpz2h8-hus19fJfcsRmeFufI6W83ckvn4ekHY2q43J_2Y8oZwFnd91I65SUxPVcHunY4Qz52Dw"/>
+                </div>
+                <!-- Item 10: Abstract Triangle -->
+                <div class="masonry-item">
+                    <img alt="Abstract structure" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4vfQYqSsbbdR363PzzFUnnxthpEeKNUakCDp5hGrM3hD91qVrW5KSTRIytQ6_dLXeaxxOAiYEQ83Ge3nP1kyMeNcSlCKt6pbD5KgiGkPjKroAqrBuzovHl_qO2psdkkjIs9rNJRoNxldQ22jN5PFxu081s080S2NP8_0tsgzUDRh2nM4ajy1I3vMCtorPHrHfb5EYWqDU0XjXyYQaHnI__0WfhQgyX9YQybIuWpv29mCGPhhVCJD7Xvc-Dix6xagprJy0TPTITMI"/>
+                </div>
+                <!-- Item 11: Dark Portrait -->
+                <div class="masonry-item">
+                    <img alt="Person in hat" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtPFedTXWDKShjfpfzVtXEu3ovf80zRwmNfdZfECl3rCU_SiBcD2kzQM3yi_hrEvlB5H-TIu7zFjVmAxoNfFXvHjjZgl-97kaGLdhyV9V3gi9a0qLiEB9R95tUeqTPcKjFGJ5TZDfkw0VfcTEJReGilItWi3YZ-PZ7HiOCiSpT4ZDDZBb0QcVmN1TMxKFgY4RB_MlEgfe1ISn95arUstqghCeB8ld1CNhr88Ox3bUbODV2h7nzt-yGmfutPAVK-2s-nOaEAyAGuJY"/>
+                </div>
+                <!-- Item 12: Salad Dish -->
+                <div class="masonry-item">
+                    <img alt="Salad" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0YHmYifTpkQUHHwVXW2y_nxYA7qX-jXUOvfU3bTPRa2MudbVZsKCPfsV9qAW1274cSjpCkFGhvMcvuUa-shMTcN0JsfvIWPbYojFBT_OTbIXcbJUDXjnePM-wiP3pAxM5pn2KPPoQNjLNoclnryvExinzlxWM23qRJJma3CVooSloH304dXR_KWXCgYDCK5HXqJx3-KCnsqt6MN2seyBpJnxDYOSEcwSTUrWh3xSxgmhp1i_OwiFOybnGi9mC1V9zYX2SMG8BIOQ"/>
+                </div>
+                <!-- Item 13: Burger -->
+                <div class="masonry-item">
+                    <img alt="Burger close up" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXEhpJyyhFZerdw9LwofpeuRw2GCYZsum2YawhZfhPCri_G8vb0nqiWZrALNOJY0WY6b-stekt-uMaENUpv_LrMpwRe25ePa2Nu5eEKyzlqGDxnYXxpHN3nAZL6hz2fJ5s7VT5qCZyVjmHhlc10iI502iInihxGJmoUKmhMZ6cUeGQDCvQHupD4z77aZN5ADSEszNRBSZHUa1e-nrHY1FJ1M5vR9z6eU7QNHupqUl5V17lvT_XdGUMboiA9ffKpt2ZNvqMmUJ8a-U"/>
+                </div>
+                <!-- Item 14: Beach/Island -->
+                <div class="masonry-item">
+                    <img alt="Island landscape" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiRrgY3wkjKYHd2XfEfXDgSjWoQHtOJNMtM5MA8dV6IHof0dZQ1XZ4mfSkpLLuoZYt0L6XNGWtBrjy2B6hdgD-1MzkPTMxZyuNGTmC2G5J3MEKYacaTx7ROWEVvJSefMCcAV26skfmHLkYvtZDiKk00EL08FX4C5XnMmcE6aEzld1QAjerGlOGFcs-LwyvXpx7XNtzjjt24LIgHf3FFs5LdM36i0_K08rOf1tVz-yTeiK3A9RdEoXTGXwPXrY9n73c-BL9qEcBAVE"/>
+                </div>
+                <!-- Item 15: Architecture Street -->
+                <div class="masonry-item">
+                    <img alt="European street" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDU4NmH_g7XGPWgS2j9ubh4cTSN8G6Y61P2WxSdadApbKbbRcMBl3wReqdmjtdIs887GZml2BxEL42kRPqUINbqw9Kt6cy42X7dfuN_Lr1OS_8I_NZqo-1CnH7e8sC-ocol9ydmNh522z5Vp6eYwUNE0F82qoLgWqxt1YLLS0VncuiAzU3GAwnkRCGxfTpR_mxi4OtEx12tTroVqgxzvIISBQs3Nc-l-RTcYBxI-GMlNaA_YyVTLUPDLLOzMSc9e-EpzQoi_vaOb8Q"/>
+                </div>
+                <!-- Item 16: Graphic Minimal -->
+                <div class="masonry-item">
+                    <img alt="Minimal design" class="w-full rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApH70MO2GSiIMuVORZWjCUKSd-AKH_AnKVigQ86_TisqJ5TCUuR3Sv0-mHVHiHuR6c1zcbus2Ig6r8WqfRj7nh3PypY-9nkCNfEDo717XwYeOwKoEnoaqFWv19CJdrSyrzUwsGir661I_LLrfOT9s6bzgotu-n1fxlY5RD3mcQloCxxskOPSco-HQTWQ7fR6zinoS9euvLXZcnXu3YEVX0PjIxGAxvKbmgd-PJnY9b_PnDt6JudZjVU3ewss4AM3k2Rt1t-0WHJEY"/>
+                </div>
+            </div>
+        </main>
     </div>
 
     <div class="floating-menu">
