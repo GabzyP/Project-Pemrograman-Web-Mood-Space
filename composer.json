@@ -1,0 +1,12 @@
+{
+    "name": "acernitro5/project-pemrograman-web-mood-space",
+    "authors": [
+        {
+            "name": "Gabriel Glenn Peter Pardede",
+            "email": "179486941+GabzyP@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "cloudinary/cloudinary_php": "^3.1"
+    }
+}

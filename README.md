@@ -19,7 +19,6 @@ index.html            # Halaman Utama (Tempat Memilih Karakter)
 music.html            # Berisi Musik sesuai mood dengan format spotify playlist dan local musik
 video.html            # Berisi Video sesuai mood
 quotes.html           # Berisi Kata Kata sesuai mood
-form.html             # Halaman Laporan
 style.css             # Styling & Layout 
 script.js             # Database Konten & Logika Website
 ```
@@ -68,8 +67,6 @@ Fitur Utama:
 -  Music Room: Integrasi Spotify Embed dan Local Music Player dengan tampilan kartu album estetik.
 
 -  Quotes: Galeri kutipan inspiratif dengan fitur Tambah Quote Sendiri.
-
--  Form Laporan: Formulir laporan dengan notifikasi alert JavaScript.
 
 -  Responsive Design: Tampilan menyesuaikan layar Desktop, Tablet, dan Mobile.
 
