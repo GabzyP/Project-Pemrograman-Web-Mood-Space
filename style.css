@@ -46,6 +46,66 @@
     --transition-smooth: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+body.light-mode {
+    --bg-primary: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-surface: #e8e8ed;
+    --bg-surface-hover: #d1d1d6;
+    --bg-surface-active: #c7c7cc;
+    --text-primary: #1c1c1e;
+    --text-secondary: #636366;
+    --text-muted: #8e8e93;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-color-hover: rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode .ms-navbar {
+    background: rgba(245, 245, 247, 0.95);
+}
+
+body.light-mode.mood-active .ms-navbar {
+    background: linear-gradient(180deg,
+            rgba(var(--mood-color-rgb), 0.08) 0%,
+            rgba(245, 245, 247, 0.95) 100%);
+}
+
+body.moodspace-mode {
+    --bg-primary: var(--mood-color);
+    --bg-secondary: rgba(0, 0, 0, 0.25);
+    --bg-surface: rgba(0, 0, 0, 0.35);
+    --bg-surface-hover: rgba(0, 0, 0, 0.45);
+    --bg-surface-active: rgba(0, 0, 0, 0.55);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.85);
+    --text-muted: rgba(255, 255, 255, 0.6);
+    --border-color: rgba(255, 255, 255, 0.15);
+    --border-color-hover: rgba(255, 255, 255, 0.25);
+}
+
+body.moodspace-mode::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+body.moodspace-mode .ms-navbar {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+body.moodspace-mode .ms-sidebar {
+    background: transparent;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.moodspace-mode.mood-active .ms-navbar {
+    background: rgba(0, 0, 0, 0.3);
+}
+
 html {
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
@@ -334,6 +394,12 @@ input {
     color: var(--mood-color);
 }
 
+body.moodspace-mode .ms-sidebar__item.active {
+    color: #FFD700;
+    font-weight: 800;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
 .ms-sidebar__item-icon {
     width: 24px;
     height: 24px;
@@ -343,6 +409,85 @@ input {
     font-size: 1.15rem;
     flex-shrink: 0;
 }
+
+.ms-sidebar__tabs-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.ms-sidebar__tab-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.ms-sidebar__tab-icon i {
+    z-index: 2;
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.ms-sidebar__tab-icon i.fa-play {
+    margin-left: 2px;
+}
+
+.logo-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px dashed currentColor;
+    opacity: 0.5;
+    animation: spin 6s linear infinite;
+    z-index: 1;
+    transition: all 0.3s;
+}
+
+.ms-sidebar__tab-icon:hover {
+    color: var(--text-primary);
+}
+
+.ms-sidebar__tab-icon:hover i {
+    transform: scale(1.2) rotate(360deg);
+}
+
+.ms-sidebar__tab-icon:hover .logo-ring {
+    border: 2px solid currentColor;
+    opacity: 1;
+    animation-duration: 2s;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.ms-sidebar__tab-icon.active {
+    color: var(--text-primary);
+}
+
+.ms-sidebar__tab-icon.active .logo-ring {
+    border: 2px solid currentColor;
+    opacity: 1;
+    animation-duration: 4s;
+}
+
+.mood-active .ms-sidebar__tab-icon.active {
+    color: var(--mood-color);
+}
+
+.mood-active .ms-sidebar__tab-icon.active .logo-ring {
+    box-shadow: 0 0 12px currentColor;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
 
 
 .ms-sidebar__mood-avatar {
@@ -383,75 +528,6 @@ input {
 }
 
 
-
-.ms-mood-header {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: linear-gradient(135deg,
-            rgba(var(--mood-color-rgb), 0.12) 0%,
-            rgba(var(--mood-color-rgb), 0.03) 100%);
-    border-radius: var(--radius-xl);
-    border: 1px solid rgba(var(--mood-color-rgb), 0.1);
-}
-
-.ms-mood-header__avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: var(--radius-full);
-    object-fit: cover;
-    border: 3px solid var(--mood-color);
-    box-shadow: 0 0 20px rgba(var(--mood-color-rgb), 0.3);
-    flex-shrink: 0;
-}
-
-.ms-mood-header__info {
-    flex: 1;
-}
-
-.ms-mood-header__title {
-    font-size: 2rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    text-transform: capitalize;
-    margin-bottom: 0.25rem;
-}
-
-.ms-mood-header__subtitle {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.ms-mood-header__tabs {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.ms-mood-header__tab {
-    padding: 0.5rem 1.25rem;
-    border-radius: var(--radius-full);
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    transition: all var(--transition-fast);
-}
-
-.ms-mood-header__tab:hover {
-    background: var(--bg-surface-hover);
-    color: var(--text-primary);
-}
-
-.ms-mood-header__tab.active {
-    background: var(--mood-color);
-    color: #000;
-    border-color: var(--mood-color);
-}
 
 
 
@@ -663,6 +739,8 @@ input {
 }
 
 .ms-quote-card {
+    display: inline-block;
+    width: 100%;
     break-inside: avoid;
     margin-bottom: 1.25rem;
     background: var(--bg-secondary);
@@ -680,9 +758,6 @@ input {
 
 .ms-quote-card__image {
     width: 100%;
-    max-height: 400px;
-    object-fit: contain;
-    background: var(--bg-surface);
     display: block;
 }
 
@@ -749,7 +824,7 @@ input {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1.25rem;
-    margin-top: 2rem;
+    margin-top: 0;
 }
 
 .ms-mood-select-card {
@@ -783,12 +858,9 @@ input {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -55%);
-    width: 80px;
-    height: 80px;
-    border-radius: var(--radius-full);
-    object-fit: cover;
-    border: 3px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
     z-index: 2;
     transition: transform var(--transition-base);
 }
@@ -1110,7 +1182,7 @@ input {
 .ms-profile-main {
     max-width: 1000px;
     margin: 0 auto;
-    padding: calc(var(--navbar-height) + 2rem) 2rem 5rem;
+    padding: calc(var(--navbar-height) + 1rem) 2rem 5rem;
 }
 
 .ms-profile-header {
@@ -1118,7 +1190,6 @@ input {
     align-items: flex-start;
     gap: 2rem;
     margin-bottom: 2rem;
-    padding-top: 2rem;
 }
 
 .ms-profile-avatar-container {
@@ -1156,7 +1227,9 @@ input {
 .ms-profile-username {
     font-size: 1.1rem;
     font-weight: 500;
-    color: var(--text-primary);
+    color: var(--text-muted);
+    border-left: 2px solid var(--border-color);
+    padding-left: 0.75rem;
 }
 
 .ms-profile-stats {
@@ -1272,14 +1345,16 @@ input {
 }
 
 .ms-profile-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 1rem;
+    column-count: 6;
+    column-gap: 1rem;
 }
 
 .ms-profile-card {
+    display: inline-block;
+    width: 100%;
     position: relative;
-    aspect-ratio: 3 / 4;
+    break-inside: avoid;
+    margin-bottom: 1rem;
     background: var(--bg-surface);
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -1294,21 +1369,38 @@ input {
 
 .ms-profile-card img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    display: block;
 }
 
 .ms-profile-card-overlay {
     position: absolute;
-    bottom: 0.5rem;
-    left: 0.5rem;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 0.25rem;
+    padding: 8px 10px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.6));
     font-size: 0.75rem;
     font-weight: 700;
     color: #fff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.card-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #fff;
+}
+
+.card-stat .fa-heart {
+    color: #E84040;
+}
+
+.card-stat .fa-bookmark {
+    color: #FFD600;
 }
 
 .ms-profile-card-privacy {
@@ -1339,7 +1431,7 @@ input {
 
 @media (max-width: 900px) {
     .ms-profile-grid {
-        grid-template-columns: repeat(4, 1fr);
+        column-count: 4;
     }
 }
 
@@ -1369,6 +1461,14 @@ input {
     }
     
     .ms-profile-grid {
-        grid-template-columns: repeat(2, 1fr);
+        column-count: 2;
     }
+}
+
+.ms-video-thumb:hover .video-overlay {
+    background: rgba(0,0,0,0.15) !important;
+}
+
+.ms-video-thumb:hover .play-btn-big {
+    transform: translate(-50%, -50%) scale(1.1) !important;
 }

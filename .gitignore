@@ -1,0 +1,17 @@
+# Cloudinary credentials
+cloudinary.config.php
+
+# Composer dependencies
+/vendor/
+composer.lock
+
+# Uploaded files (profile pictures, dll)
+/assets/uploads/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
