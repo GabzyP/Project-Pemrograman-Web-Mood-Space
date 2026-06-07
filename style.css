@@ -179,7 +179,7 @@ input {
     align-items: center;
     justify-content: space-between;
     padding: 0 1rem;
-    z-index: 1000;
+    z-index: 1300;
     transition: background-color var(--transition-smooth);
 }
 
@@ -1037,6 +1037,35 @@ body.moodspace-mode .ms-sidebar__item.active {
 
 
 
+.ms-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1100;
+    backdrop-filter: blur(2px);
+}
+
+.ms-sidebar-overlay.active {
+    display: block;
+}
+
+.ms-sidebar-toggle {
+    display: none; 
+    background: transparent;
+    border: none;
+    color: var(--text-primary, #F0EEF8);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    margin-right: 8px;
+    transition: background 0.15s;
+}
+
+.ms-sidebar-toggle:hover {
+    background: rgba(255,255,255,0.1);
+}
 
 @media (max-width: 1400px) {
     .ms-grid {
@@ -1066,7 +1095,20 @@ body.moodspace-mode .ms-sidebar__item.active {
 
 @media (max-width: 900px) {
     .ms-sidebar {
-        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 260px;
+        z-index: 1200;
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+        padding-top: 64px; 
+        box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+    }
+    .ms-sidebar.open {
+        transform: translateX(0);
     }
 
     .ms-main {
@@ -1079,6 +1121,12 @@ body.moodspace-mode .ms-sidebar__item.active {
 
     .ms-navbar__title {
         display: none;
+    }
+
+    .ms-sidebar-toggle { 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
     }
 }
 
@@ -1471,4 +1519,29 @@ body.moodspace-mode .ms-sidebar__item.active {
 
 .ms-video-thumb:hover .play-btn-big {
     transform: translate(-50%, -50%) scale(1.1) !important;
+}
+
+.ms-stat-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    font-family: inherit;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.ms-stat-btn:hover {
+    background: rgba(255,255,255,0.08);
+}
+.ms-stat-btn strong {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+.ms-stat-btn span {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
 }

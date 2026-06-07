@@ -111,15 +111,18 @@ $db_content = [];
 if ($activeTab === 'content' && $profile_user['role'] === 'creator') {
     $stmt_content = $conn->prepare("
         SELECT k.*, 
+               u.display_name as uploader_display_name, u.username as uploader_username, u.profile_picture as uploader_avatar_raw, u.role as uploader_role,
                (SELECT COUNT(*) FROM likes WHERE konten_id = k.id) as like_count,
                (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id) as fav_count,
                (SELECT COUNT(*) FROM likes WHERE konten_id = k.id AND user_id = ?) as user_liked,
-               (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id AND user_id = ?) as user_favorited
+               (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id AND user_id = ?) as user_favorited,
+               (SELECT COUNT(*) FROM follows WHERE follower_id = ? AND following_id = k.uploaded_by) as user_followed
         FROM konten_mood k
+        LEFT JOIN users u ON k.uploaded_by = u.id
         WHERE k.uploaded_by = ? 
-        ORDER BY k.created_at DESC LIMIT 20
+        ORDER BY k.created_at DESC LIMIT 100
     ");
-    $stmt_content->bind_param("iii", $_SESSION['user_id'], $_SESSION['user_id'], $profile_user['id']);
+    $stmt_content->bind_param("iiii", $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id'], $profile_user['id']);
     $stmt_content->execute();
     $res_content = $stmt_content->get_result();
     while ($row_content = $res_content->fetch_assoc()) {
@@ -129,16 +132,19 @@ if ($activeTab === 'content' && $profile_user['role'] === 'creator') {
 } elseif ($activeTab === 'favorites') {
     $stmt_content = $conn->prepare("
         SELECT k.*, 
+               u.display_name as uploader_display_name, u.username as uploader_username, u.profile_picture as uploader_avatar_raw, u.role as uploader_role,
                (SELECT COUNT(*) FROM likes WHERE konten_id = k.id) as like_count,
                (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id) as fav_count,
                (SELECT COUNT(*) FROM likes WHERE konten_id = k.id AND user_id = ?) as user_liked,
-               (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id AND user_id = ?) as user_favorited
+               (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id AND user_id = ?) as user_favorited,
+               (SELECT COUNT(*) FROM follows WHERE follower_id = ? AND following_id = k.uploaded_by) as user_followed
         FROM favorites f
         JOIN konten_mood k ON f.konten_id = k.id
+        LEFT JOIN users u ON k.uploaded_by = u.id
         WHERE f.user_id = ? 
         ORDER BY f.created_at DESC LIMIT 20
     ");
-    $stmt_content->bind_param("iii", $_SESSION['user_id'], $_SESSION['user_id'], $profile_user['id']);
+    $stmt_content->bind_param("iiii", $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id'], $profile_user['id']);
     $stmt_content->execute();
     $res_content = $stmt_content->get_result();
     while ($row_content = $res_content->fetch_assoc()) {
@@ -148,16 +154,19 @@ if ($activeTab === 'content' && $profile_user['role'] === 'creator') {
 } elseif ($activeTab === 'liked') {
     $stmt_content = $conn->prepare("
         SELECT k.*, 
+               u.display_name as uploader_display_name, u.username as uploader_username, u.profile_picture as uploader_avatar_raw, u.role as uploader_role,
                (SELECT COUNT(*) FROM likes WHERE konten_id = k.id) as like_count,
                (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id) as fav_count,
                (SELECT COUNT(*) FROM likes WHERE konten_id = k.id AND user_id = ?) as user_liked,
-               (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id AND user_id = ?) as user_favorited
+               (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id AND user_id = ?) as user_favorited,
+               (SELECT COUNT(*) FROM follows WHERE follower_id = ? AND following_id = k.uploaded_by) as user_followed
         FROM likes l
         JOIN konten_mood k ON l.konten_id = k.id
+        LEFT JOIN users u ON k.uploaded_by = u.id
         WHERE l.user_id = ? 
         ORDER BY l.created_at DESC LIMIT 20
     ");
-    $stmt_content->bind_param("iii", $_SESSION['user_id'], $_SESSION['user_id'], $profile_user['id']);
+    $stmt_content->bind_param("iiii", $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id'], $profile_user['id']);
     $stmt_content->execute();
     $res_content = $stmt_content->get_result();
     while ($row_content = $res_content->fetch_assoc()) {
@@ -167,6 +176,10 @@ if ($activeTab === 'content' && $profile_user['role'] === 'creator') {
 }
 
 function formatProfileCard($row, $colors) {
+    $row['uploader_name'] = $row['uploader_display_name'] ?? $row['uploader_username'] ?? $row['sumber'] ?? 'Unknown';
+    $row['uploader_avatar'] = getAvatar($row['uploader_avatar_raw'] ?? '');
+    $row['uploader_role'] = $row['uploader_role'] ?? '';
+    $row['user_followed'] = !empty($row['user_followed']) ? 1 : 0;
     if ($row['tipe'] === 'video') {
         if (!empty($row['media_id'])) {
             $row['thumb'] = "https://img.youtube.com/vi/" . $row['media_id'] . "/mqdefault.jpg";
@@ -230,19 +243,24 @@ function formatProfileCard($row, $colors) {
             
             <div class="ms-profile-info">
                 <div class="ms-profile-names">
-                    <h1 class="ms-profile-display-name"><?php echo htmlspecialchars($profile_user['display_name']); ?></h1>
+                    <h1 class="ms-profile-display-name" style="display:flex;align-items:center;gap:8px;">
+                        <?php echo htmlspecialchars($profile_user['display_name']); ?>
+                        <?php if ($profile_user['role'] === 'creator'): ?>
+                            <i class="fas fa-check-circle" style="color:#6C5CE7;font-size:20px;" title="Creator"></i>
+                        <?php endif; ?>
+                    </h1>
                     <span class="ms-profile-username"><?php echo htmlspecialchars($profile_user['username']); ?></span>
                 </div>
                 
                 <div class="ms-profile-stats">
+                    <button class="ms-profile-stat" onclick="openFollowModal('following', <?php echo $profile_user['id']; ?>)" style="background:transparent;border:none;color:inherit;font-family:inherit;cursor:pointer;padding:0;">
+                        <strong style="font-size:18px;"><?php echo number_format($profile_user['following_count']); ?></strong> <span>Following</span>
+                    </button>
+                    <button class="ms-profile-stat" onclick="openFollowModal('followers', <?php echo $profile_user['id']; ?>)" style="background:transparent;border:none;color:inherit;font-family:inherit;cursor:pointer;padding:0;">
+                        <strong data-type="followers" style="font-size:18px;"><?php echo number_format($profile_user['followers_count']); ?></strong> <span>Followers</span>
+                    </button>
                     <div class="ms-profile-stat">
-                        <strong><?php echo number_format($profile_user['following_count']); ?></strong> <span>Following</span>
-                    </div>
-                    <div class="ms-profile-stat">
-                        <strong data-type="followers"><?php echo number_format($profile_user['followers_count']); ?></strong> <span>Followers</span>
-                    </div>
-                    <div class="ms-profile-stat">
-                        <strong><?php echo number_format($profile_user['likes_count']); ?></strong> <span>Likes</span>
+                        <strong style="font-size:18px;"><?php echo number_format($profile_user['likes_count']); ?></strong> <span>Likes</span>
                     </div>
                 </div>
                 
@@ -421,20 +439,33 @@ document.addEventListener('DOMContentLoaded', () => openEditModal());
     <button onclick="closeProfileMedia(null, true)" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;z-index:10001;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
         <i class="fas fa-times"></i>
     </button>
+    <div id="profileMediaCreatorBar" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;width:90vw;max-width:960px;">
+        <a id="profileMediaCreatorLink" href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;flex:1;">
+            <img id="profileMediaCreatorAvatar" src="" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover;background:#333;flex-shrink:0;">
+            <div><div id="profileMediaCreatorName" style="color:#F0EEF8;font-size:14px;font-weight:600;"></div></div>
+        </a>
+        <button id="profileMediaFollowBtn" onclick="handleProfileMediaFollow()" style="background:#6C5CE7;border:none;border-radius:20px;color:#fff;font-size:12px;font-weight:600;padding:7px 18px;cursor:pointer;">
+            + Follow
+        </button>
+    </div>
     <div id="profileMediaContent" style="position:relative;width:90vw;max-width:960px;display:flex;align-items:center;justify-content:center;">
     </div>
-    <div style="display:flex;align-items:center;gap:32px;margin-top:24px;">
-        <button onclick="prevProfileMedia()" style="background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.8);width:52px;height:52px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-            <i class="fas fa-step-backward"></i>
-        </button>
-        <div id="profileMediaMeta" style="text-align:center;color:rgba(240,238,248,0.5);font-size:13px;min-width:80px;"></div>
-        <button onclick="nextProfileMedia()" style="background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.8);width:52px;height:52px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-            <i class="fas fa-step-forward"></i>
-        </button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:20px;">
+        
+        <button id="profileMediaFavBtn" onclick="handleProfileMediaFav()" style="background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:46px;height:46px;color:#FFD600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" title="Favorit"><i class="fas fa-bookmark"></i></button>
+        
+        <button onclick="prevProfileMedia()" style="background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.8);width:46px;height:46px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"><i class="fas fa-step-backward"></i></button>
+        
+        <button id="profileMediaLikeBtn" onclick="handleProfileMediaLike()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:52px;height:52px;color:#E84040;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" title="Like"><i class="fas fa-heart"></i></button>
+        
+        <button onclick="nextProfileMedia()" style="background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.8);width:46px;height:46px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"><i class="fas fa-step-forward"></i></button>
+        
+        <button id="profileMediaDislikeBtn" onclick="handleProfileMediaDislike()" style="background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:46px;height:46px;color:rgba(255,255,255,0.45);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" title="Dislike"><i class="fas fa-heart-broken"></i></button>
     </div>
 </div>
 
 <script>
+const currentUserId = <?php echo isset($me['id']) ? $me['id'] : 0; ?>;
 const profileContentList = <?php echo json_encode(array_values($db_content)); ?>;
 let currentProfileIndex = 0;
 
@@ -472,7 +503,34 @@ function openProfileMedia(index) {
         }
     }
     
-    document.getElementById('profileMediaMeta').textContent = (index + 1) + ' / ' + profileContentList.length;
+    
+    const creatorProfileUrl = 'profile.php?id=' + item.uploaded_by;
+    document.getElementById('profileMediaCreatorLink').href = creatorProfileUrl;
+    document.getElementById('profileMediaCreatorName').innerHTML = item.uploader_name + (item.uploader_role === 'creator' ? ' <i class="fas fa-check-circle" style="color:#6C5CE7;font-size:12px;"></i>' : '');
+    const defAv = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3C/svg%3E";
+    document.getElementById('profileMediaCreatorAvatar').src = item.uploader_avatar || defAv;
+
+    
+    const likeBtn = document.getElementById('profileMediaLikeBtn');
+    const favBtn = document.getElementById('profileMediaFavBtn');
+    likeBtn.style.color = item.user_liked ? '#E84040' : 'rgba(255,255,255,0.4)';
+    likeBtn.style.background = item.user_liked ? 'rgba(232,64,64,0.2)' : 'rgba(255,255,255,0.1)';
+    favBtn.style.color = item.user_favorited ? '#FFD600' : 'rgba(255,255,255,0.4)';
+    favBtn.style.background = item.user_favorited ? 'rgba(255,214,0,0.15)' : 'rgba(255,255,255,0.08)';
+
+    
+    const followBtn = document.getElementById('profileMediaFollowBtn');
+    const isFollowedInitial = item.user_followed === 1;
+    if (item.uploaded_by == currentUserId) {
+        if (followBtn) followBtn.style.display = 'none';
+    } else {
+        if (followBtn) {
+            followBtn.style.display = 'inline-block';
+            followBtn.textContent = isFollowedInitial ? 'Followed' : '+ Follow';
+            followBtn.style.background = isFollowedInitial ? 'rgba(255,255,255,0.15)' : '#6C5CE7';
+        }
+    }
+
     document.getElementById('profileMediaModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -495,13 +553,128 @@ function nextProfileMedia() {
     openProfileMedia(newIndex);
 }
 
+function handleProfileMediaLike() {
+    const v = profileContentList[currentProfileIndex];
+    if (!v) return;
+    const fd = new FormData();
+    fd.append('action', 'like');
+    fd.append('konten_id', v.id);
+    fetch('api_action.php', { method: 'POST', body: fd }).then(r => r.json()).then(data => {
+        if (data.success) {
+            v.user_liked = (data.status === 'added') ? 1 : 0;
+            const btn = document.getElementById('profileMediaLikeBtn');
+            btn.style.color = v.user_liked ? '#E84040' : 'rgba(255,255,255,0.4)';
+            btn.style.background = v.user_liked ? 'rgba(232,64,64,0.2)' : 'rgba(255,255,255,0.1)';
+        }
+    });
+}
+function handleProfileMediaFav() {
+    const v = profileContentList[currentProfileIndex];
+    if (!v) return;
+    const fd = new FormData();
+    fd.append('action', 'favorite');
+    fd.append('konten_id', v.id);
+    fetch('api_action.php', { method: 'POST', body: fd }).then(r => r.json()).then(data => {
+        if (data.success) {
+            v.user_favorited = (data.status === 'added') ? 1 : 0;
+            const btn = document.getElementById('profileMediaFavBtn');
+            btn.style.color = v.user_favorited ? '#FFD600' : 'rgba(255,255,255,0.4)';
+            btn.style.background = v.user_favorited ? 'rgba(255,214,0,0.15)' : 'rgba(255,255,255,0.08)';
+        }
+    });
+}
+function handleProfileMediaDislike() {
+    const btn = document.getElementById('profileMediaDislikeBtn');
+    const active = btn.style.color === 'rgb(108, 92, 231)';
+    btn.style.color = active ? 'rgba(255,255,255,0.45)' : '#6C5CE7';
+    btn.style.background = active ? 'rgba(255,255,255,0.08)' : 'rgba(108,92,231,0.2)';
+}
+function handleProfileMediaFollow() {
+    const v = profileContentList[currentProfileIndex];
+    if (!v) return;
+    const fd = new FormData();
+    fd.append('action', 'follow');
+    fd.append('target_id', v.uploaded_by);
+    fetch('api_action.php', { method: 'POST', body: fd }).then(r => r.json()).then(data => {
+        if (data.success) {
+            const btn = document.getElementById('profileMediaFollowBtn');
+            const isFollowed = data.status === 'followed';
+            v.user_followed = isFollowed ? 1 : 0;
+            if (btn) {
+                btn.textContent = isFollowed ? 'Followed' : '+ Follow';
+                btn.style.background = isFollowed ? 'rgba(255,255,255,0.15)' : '#6C5CE7';
+            }
+        } else {
+            alert(data.message || 'Gagal follow');
+        }
+    });
+}
+
 document.addEventListener('keydown', function(e) {
-    const modal = document.getElementById('profileMediaModal');
-    if (!modal || modal.style.display !== 'flex') return;
-    if (e.key === 'Escape') closeProfileMedia(null, true);
-    if (e.key === 'ArrowLeft') prevProfileMedia();
-    if (e.key === 'ArrowRight') nextProfileMedia();
+    const pModal = document.getElementById('profileMediaModal');
+    if (pModal && pModal.style.display === 'flex') {
+        if (e.key === 'Escape') closeProfileMedia(null, true);
+        if (e.key === 'ArrowLeft') prevProfileMedia();
+        if (e.key === 'ArrowRight') nextProfileMedia();
+        return;
+    }
+    const fModal = document.getElementById('followModal');
+    if (fModal && fModal.style.display === 'flex') {
+        if (e.key === 'Escape') closeFollowModal();
+    }
 });
+</script>
+
+<div id="followModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeFollowModal()">
+    <div style="background:var(--bg-secondary,#1a1a2e);border-radius:16px;width:90%;max-width:400px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-color);">
+            <span id="followModalTitle" style="font-size:16px;font-weight:600;"></span>
+            <button onclick="closeFollowModal()" style="background:none;border:none;color:var(--text-secondary);font-size:18px;cursor:pointer;"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="followModalBody" style="overflow-y:auto;flex:1;padding:8px 0;">
+            <div id="followModalLoading" style="text-align:center;padding:32px;color:var(--text-muted);"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const defaultAvatarModal = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23888'/%3E%3Cellipse cx='50' cy='85' rx='28' ry='20' fill='%23888'/%3E%3C/svg%3E";
+async function openFollowModal(type, userId) {
+    const modal   = document.getElementById('followModal');
+    const title   = document.getElementById('followModalTitle');
+    const body    = document.getElementById('followModalBody');
+    title.textContent = type === 'following' ? 'Following' : 'Followers';
+    body.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i></div>';
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    try {
+        const res  = await fetch('api_follows.php?user_id=' + userId + '&type=' + type);
+        const list = await res.json();
+        if (!list.length) {
+            body.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:14px;">Belum ada akun.</div>';
+            return;
+        }
+        body.innerHTML = list.map(u => `
+            <a href="profile.php?id=${u.id}" style="display:flex;align-items:center;gap:12px;padding:12px 20px;text-decoration:none;transition:background 0.15s;border-bottom:1px solid var(--border-color);" onmouseover="this.style.background='var(--border-color-hover)'" onmouseout="this.style.background='transparent'">
+                <img src="${u.avatar || defaultAvatarModal}" onerror="this.src='${defaultAvatarModal}'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#333;">
+                <div style="flex:1;min-width:0;">
+                    <div style="color:var(--text-primary);font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;">
+                        ${u.display_name}
+                        ${u.role === 'creator' ? '<i class="fas fa-check-circle" style="color:#6C5CE7;font-size:12px;"></i>' : ''}
+                    </div>
+                    <div style="color:var(--text-secondary);font-size:13px;margin-top:2px;">@${u.username}</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:var(--text-muted);font-size:12px;flex-shrink:0;"></i>
+            </a>
+        `).join('');
+    } catch (e) {
+        body.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:14px;">Gagal memuat data.</div>';
+    }
+}
+function closeFollowModal() {
+    document.getElementById('followModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
 </script>
 
 <script src="script.js?v=<?php echo time(); ?>"></script>

@@ -170,18 +170,18 @@ if (followBtn) {
             if (data.success) {
                 const nowFollowing = data.status === 'followed';
                 this.setAttribute('data-following', nowFollowing ? '1' : '0');
-                this.textContent = nowFollowing ? 'Following' : 'Follow';
+                this.textContent = nowFollowing ? 'Followed' : 'Follow';
                 this.className = 'ms-btn ' + (nowFollowing ? 'ms-btn-outline' : 'ms-btn-primary') + ' btn-follow';
                 
-                const followersEl = document.querySelector('.ms-profile-stat strong[data-type="followers"]');
+                const followersEl = document.getElementById('followersCountText');
                 if (followersEl) followersEl.textContent = Number(data.followers_count).toLocaleString();
             } else {
                 alert(data.message || 'Gagal melakukan follow');
-                this.textContent = isFollowing ? 'Following' : 'Follow';
+                this.textContent = isFollowing ? 'Followed' : 'Follow';
             }
         } catch (err) {
             console.error('Follow error:', err);
-            this.textContent = isFollowing ? 'Following' : 'Follow';
+            this.textContent = isFollowing ? 'Followed' : 'Follow';
         } finally {
             this.disabled = false;
         }
