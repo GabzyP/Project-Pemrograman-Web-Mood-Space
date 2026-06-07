@@ -79,11 +79,12 @@ if ($activeMood != '') {
                (SELECT COUNT(*) FROM likes WHERE konten_id = k.id) as like_count,
                (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id) as fav_count,
                (SELECT COUNT(*) FROM likes WHERE konten_id = k.id AND user_id = ?) as user_liked,
-               (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id AND user_id = ?) as user_favorited
+               (SELECT COUNT(*) FROM favorites WHERE konten_id = k.id AND user_id = ?) as user_favorited,
+               (SELECT COUNT(*) FROM follows WHERE follower_id = ? AND following_id = k.uploaded_by) as user_followed
         FROM konten_mood k 
         WHERE k.mood = ?
     ");
-    $stmt->bind_param("iis", $current_user_id, $current_user_id, $activeMood);
+    $stmt->bind_param("iiis", $current_user_id, $current_user_id, $current_user_id, $activeMood);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
@@ -97,7 +98,7 @@ if ($activeMood != '') {
 if (!empty($musik)) {
     foreach ($musik as &$m) {
         $stmt_up = $conn->prepare(
-            "SELECT display_name, username, profile_picture FROM users WHERE id = ?"
+            "SELECT display_name, username, profile_picture, role FROM users WHERE id = ?"
         );
         $stmt_up->bind_param("i", $m['uploaded_by']);
         $stmt_up->execute();
@@ -107,6 +108,7 @@ if (!empty($musik)) {
         $m['artist'] = $m['sumber'];
         $m['uploader_name'] = $uploader['display_name'] ?? $uploader['username'] ?? 'Unknown';
         $m['uploader_avatar'] = getAvatar($uploader['profile_picture'] ?? '');
+        $m['uploader_role'] = $uploader['role'] ?? '';
     }
     unset($m);
 }
@@ -114,7 +116,7 @@ if (!empty($musik)) {
 if (!empty($video)) {
     foreach ($video as &$v) {
         $stmt_up = $conn->prepare(
-            "SELECT display_name, username, profile_picture FROM users WHERE id = ?"
+            "SELECT display_name, username, profile_picture, role FROM users WHERE id = ?"
         );
         $stmt_up->bind_param("i", $v['uploaded_by']);
         $stmt_up->execute();
@@ -123,6 +125,7 @@ if (!empty($video)) {
         
         $v['uploader_name'] = $uploader['display_name'] ?? $uploader['username'] ?? 'Unknown';
         $v['uploader_avatar'] = getAvatar($uploader['profile_picture'] ?? '');
+        $v['uploader_role'] = $uploader['role'] ?? '';
     }
     unset($v);
 }
@@ -154,9 +157,13 @@ $isMoodActive = $activeMood !== '';
     <?php endif; ?>
 </head>
 <body class="<?php echo $isMoodActive ? 'mood-active' : ''; ?>">
+    <div class="ms-sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
     <nav class="ms-navbar" id="main-navbar">
         <div class="ms-navbar__left">
+            <button class="ms-sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Buka menu">
+                <i class="fas fa-bars"></i>
+            </button>
             <a href="index.php" title="MoodSpace Home">
                 <img src="assets/logo.png" alt="MoodSpace Logo" class="ms-navbar__logo" style="height:32px;width:auto;max-width:160px;">
             </a>
@@ -307,11 +314,13 @@ $isMoodActive = $activeMood !== '';
                             </a>
                             <div class="ms-card__info" style="flex:1;">
                                 <div class="ms-card__title"><?php echo htmlspecialchars($v['judul']); ?></div>
-                                <div class="ms-card__channel-name">
-                                    <a href="profile.php?id=<?php echo $v['uploaded_by']; ?>" style="text-decoration:none; color:inherit; margin-right: 4px;">
+                                <div class="ms-card__channel-name" style="display:flex;align-items:center;gap:4px;">
+                                    <a href="profile.php?id=<?php echo $v['uploaded_by']; ?>" style="text-decoration:none; color:inherit;">
                                         <?php echo htmlspecialchars($v['uploader_name'] ?? $v['sumber']); ?>
                                     </a>
-                                    <i class="fas fa-check-circle"></i>
+                                    <?php if (($v['uploader_role'] ?? '') === 'creator'): ?>
+                                        <i class="fas fa-check-circle" style="color:#6C5CE7;font-size:11px;" title="Creator"></i>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <div style="display:flex;align-items:center;gap:16px;margin-left:auto;padding-left:12px;">
@@ -387,9 +396,14 @@ $isMoodActive = $activeMood !== '';
                 <td style="padding:12px 16px;text-align:left;">
                     <a href="profile.php?id=<?php echo $m['uploaded_by']; ?>" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
                         <img src="<?php echo htmlspecialchars($m['uploader_avatar']); ?>" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">
-                        <span style="color:var(--text-secondary);font-size:13px;font-weight:500;">
-                            <?php echo htmlspecialchars($m['uploader_name']); ?>
-                        </span>
+                        <div style="display:flex;align-items:center;gap:4px;">
+                            <span style="color:var(--text-secondary);font-size:13px;font-weight:500;">
+                                <?php echo htmlspecialchars($m['uploader_name']); ?>
+                            </span>
+                            <?php if (($m['uploader_role'] ?? '') === 'creator'): ?>
+                                <i class="fas fa-check-circle" style="color:#6C5CE7;font-size:11px;" title="Creator"></i>
+                            <?php endif; ?>
+                        </div>
                     </a>
                 </td>
                 <td style="padding:12px 16px;color:var(--text-muted);font-size:14px;text-align:left;">
@@ -419,68 +433,212 @@ $isMoodActive = $activeMood !== '';
     </table>
 </div>
 
-<div id="fullPlayerView" style="display:none;max-width:480px;margin:0 auto;padding:24px 0;">
+<style>
+.ms-player-container {
+    display: flex;
+    gap: 40px;
+    align-items: stretch;
+    max-width: 540px;
+    margin: 0 auto;
+    transition: max-width 0.3s ease;
+}
+.ms-player-left {
+    flex: 1;
+    width: 100%;
+    margin: 0 auto;
+}
+.ms-player-right {
+    display: none;
+    width: 360px;
+    flex-shrink: 0;
+}
+
+#commentList::-webkit-scrollbar { width: 6px; }
+#commentList::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
+#commentList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+#commentList::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+#fullPlayerView.ms-player-expanded .ms-player-container {
+    max-width: 960px !important;
+}
+#fullPlayerView.ms-player-expanded .ms-player-right {
+    display: block;
+}
+
+@media (max-width: 860px) {
+    #fullPlayerView.ms-player-expanded .ms-player-container {
+        max-width: 540px !important;
+    }
+    .ms-player-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+    }
+    .ms-player-right {
+        width: 100%;
+    }
+}
+</style>
+
+<div id="fullPlayerView" style="display:none; width:100%; position:relative; padding:24px 16px;">
+
+    
     <button onclick="backToList()"
-            style="background:none;border:none;color:rgba(240,238,248,0.6);cursor:pointer;
-                   font-size:14px;margin-bottom:32px;padding:0;display:flex;align-items:center;gap:8px;
-                   font-family:inherit;">
-        <i class="fas fa-chevron-left"></i> Daftar Lagu
+            style="background:none;border:none;color:var(--text-secondary);cursor:pointer;
+                   font-size:15px;padding:0;display:inline-flex;align-items:center;gap:8px;
+                   font-family:inherit;z-index:10;font-weight:500;margin-bottom:24px;margin-left:8px;">
+        <i class="fas fa-chevron-left"></i> Kembali
     </button>
 
-    <div style="text-align:center;margin-bottom:28px;">
-        <img id="playerCover" src="" alt="Cover"
-             style="width:280px;height:280px;border-radius:12px;object-fit:cover;
-                    box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-    </div>
+    <div class="ms-player-container">
+        
+        <div class="ms-player-left">
+            
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+                <a id="musicCreatorLink" href="#" style="display:flex;align-items:center;gap:12px;text-decoration:none;flex:1;">
+                    <img id="musicCreatorAvatar" src="" alt="Creator"
+                         style="width:48px;height:48px;border-radius:50%;object-fit:cover;background:#333;flex-shrink:0;">
+                    <div>
+                        <div id="musicCreatorName" style="color:var(--text-primary);font-size:16px;font-weight:600;"></div>
+                    </div>
+                </a>
+                <button id="musicFollowBtn" onclick="handleMusicFollow()"
+                        style="background:#6C5CE7;border:none;
+                               border-radius:24px;color:#fff;font-size:14px;font-weight:600;
+                               padding:8px 24px;cursor:pointer;white-space:nowrap;">
+                    Follow
+                </button>
+            </div>
 
-    <div style="margin-bottom:20px;">
-        <div id="playerTitle" style="font-size:22px;font-weight:700;color:#F0EEF8;margin-bottom:4px;"></div>
-        <div id="playerArtist" style="font-size:15px;color:rgba(240,238,248,0.55);"></div>
-    </div>
+            
+            <div style="margin-bottom:24px;">
+                <img id="playerCover" src="" alt="Cover"
+                     style="width:100%;max-width:300px;aspect-ratio:1/1;border-radius:16px;object-fit:cover;
+                            box-shadow:0 24px 64px rgba(0,0,0,0.6); display:block; margin:0 auto;">
+            </div>
 
-    <audio id="mainAudio" style="display:none;"></audio>
+            
+            <div style="text-align:center;margin-bottom:20px;">
+                <div id="playerTitle" style="font-size:26px;font-weight:700;color:var(--text-primary);margin-bottom:4px;"></div>
+                <div id="playerArtist" style="font-size:16px;color:var(--text-secondary);"></div>
+            </div>
 
-    <div style="margin-bottom:16px;">
-        <input type="range" id="progressBar" value="0" min="0" step="0.1"
-               style="width:100%;accent-color:#F0EEF8;cursor:pointer;height:4px;">
-        <div style="display:flex;justify-content:space-between;margin-top:4px;">
-            <span id="currentTime" style="font-size:12px;color:rgba(240,238,248,0.4);">0:00</span>
-            <span id="totalTime" style="font-size:12px;color:rgba(240,238,248,0.4);">0:00</span>
+            <audio id="mainAudio" style="display:none;"></audio>
+
+            
+            <div style="margin-bottom:20px;">
+                <input type="range" id="progressBar" value="0" min="0" step="0.1"
+                       style="width:100%;accent-color:#F0EEF8;cursor:pointer;height:4px;">
+                <div style="display:flex;justify-content:space-between;margin-top:8px;">
+                    <span id="currentTime" style="font-size:13px;color:var(--text-muted);font-weight:500;">0:00</span>
+                    <span id="totalTime" style="font-size:13px;color:var(--text-muted);font-weight:500;">0:00</span>
+                </div>
+            </div>
+
+            
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;">
+                
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:16px;">
+                    <button id="musicLikeBtn" onclick="handleMusicLike()"
+                            style="background:none;border:none;cursor:pointer;font-size:24px;
+                                   color:var(--text-secondary);transition:all 0.2s;padding:12px;"
+                            title="Like">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <button onclick="prevTrack()"
+                            style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:24px;padding:12px;">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                </div>
+                
+                
+                <div style="display:flex;justify-content:center;padding:0 24px;">
+                    <button id="playPauseBtn" onclick="togglePlay()"
+                            style="width:72px;height:72px;border-radius:50%;background:var(--text-primary);border:none;
+                                   cursor:pointer;font-size:26px;color:var(--bg-primary);display:flex;
+                                   align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+                        <i class="fas fa-play" style="margin-left:4px;"></i>
+                    </button>
+                </div>
+
+                
+                <div style="display:flex;align-items:center;justify-content:flex-start;gap:16px;">
+                    <button onclick="nextTrack()"
+                            style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:24px;padding:12px;">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button id="musicFavBtn" onclick="handleMusicFav()"
+                            style="background:none;border:none;cursor:pointer;font-size:24px;
+                                   color:var(--text-secondary);transition:all 0.2s;padding:12px;"
+                            title="Favorit">
+                        <i class="fas fa-bookmark"></i>
+                    </button>
+                    <button onclick="toggleCommentPanel()"
+                            style="background:none;border:none;cursor:pointer;font-size:24px;
+                                   color:var(--text-secondary);transition:all 0.2s;padding:12px;"
+                            title="Komentar">
+                        <i class="fas fa-comment-dots"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div style="display:flex;align-items:center;justify-content:center;gap:32px;">
-        <button onclick="prevTrack()"
-                style="background:none;border:none;color:rgba(240,238,248,0.7);cursor:pointer;font-size:20px;">
-            <i class="fas fa-step-backward"></i>
-        </button>
-        <button id="playPauseBtn" onclick="togglePlay()"
-                style="width:56px;height:56px;border-radius:50%;background:#F0EEF8;border:none;
-                       cursor:pointer;font-size:20px;color:#080810;display:flex;align-items:center;
-                       justify-content:center;">
-            <i class="fas fa-play"></i>
-        </button>
-        <button onclick="nextTrack()"
-                style="background:none;border:none;color:rgba(240,238,248,0.7);cursor:pointer;font-size:20px;">
-            <i class="fas fa-step-forward"></i>
-        </button>
+        
+        <div class="ms-player-right">
+            <div id="commentSection" style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:20px;display:flex;flex-direction:column;max-height:500px;">
+                <div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-comment"></i>
+                    <span id="commentCount">Komentar</span>
+                </div>
+                <div id="commentList" style="flex:1;max-height:460px;overflow-y:auto;margin-bottom:16px;padding-right:8px;"></div>
+                <div style="display:flex;gap:10px;align-items:center;margin-top:auto;">
+                    <input id="commentInput" type="text" placeholder="Tulis komentar..."
+                           maxlength="500"
+                           style="flex:1;background:var(--bg-surface);border:1px solid var(--border-color);
+                                  border-radius:24px;padding:12px 16px;color:var(--text-primary);font-size:13px;
+                                  outline:none;font-family:inherit;"
+                           onkeydown="if(event.key==='Enter') submitComment()">
+                    <button onclick="submitComment()"
+                            style="background:#6C5CE7;border:none;border-radius:50%;width:42px;height:42px;
+                                   color:#fff;font-size:15px;cursor:pointer;flex-shrink:0;
+                                   display:flex;align-items:center;justify-content:center;transition:background 0.2s;"
+                            onmouseover="this.style.background='#5a4bcf'" onmouseout="this.style.background='#6C5CE7'">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
+let currentKontenId = null;
 const tracks = <?php echo json_encode(array_map(function($m) {
     return [
-        'judul'     => $m['judul'],
-        'artist'    => $m['artist'],
-        'file_url'  => $m['file_url'] ?? '',
-        'cover_url' => $m['cover_url'] ?? '',
-        'durasi'    => $m['durasi'] ?? '',
+        'id'             => $m['id'],
+        'judul'          => $m['judul'],
+        'artist'         => $m['artist'],
+        'file_url'       => $m['file_url'] ?? '',
+        'cover_url'      => $m['cover_url'] ?? '',
+        'durasi'         => $m['durasi'] ?? '',
+        'uploader_id'    => $m['uploaded_by'],
+        'uploader_name'  => $m['uploader_name'] ?? '',
+        'uploader_avatar'=> $m['uploader_avatar'] ?? '',
+        'uploader_role'  => $m['uploader_role'] ?? '',
+        'user_liked'     => !empty($m['user_liked']) ? 1 : 0,
+        'user_favorited' => !empty($m['user_favorited']) ? 1 : 0,
+        'user_followed'  => !empty($m['user_followed']) ? 1 : 0,
     ];
 }, $musik)); ?>;
 
 let currentIndex = 0;
 const audio = document.getElementById('mainAudio');
 const defaultCover = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232a2a3a'/%3E%3Ccircle cx='50' cy='50' r='20' fill='%23444'/%3E%3Ccircle cx='50' cy='50' r='8' fill='%232a2a3a'/%3E%3C/svg%3E";
+
+function toggleCommentPanel() {
+    const view = document.getElementById('fullPlayerView');
+    view.classList.toggle('ms-player-expanded');
+}
 
 function playTrack(index) {
     currentIndex = index;
@@ -490,9 +648,37 @@ function playTrack(index) {
     document.getElementById('playerTitle').textContent = t.judul;
     document.getElementById('playerArtist').textContent = t.artist;
     document.getElementById('playerCover').src = t.cover_url || defaultCover;
+
+    
+    const defAv = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3C/svg%3E";
+    document.getElementById('musicCreatorAvatar').src = t.uploader_avatar || defAv;
+    document.getElementById('musicCreatorName').innerHTML = t.uploader_name + (t.uploader_role === 'creator' ? ' <i class="fas fa-check-circle" style="color:#6C5CE7;font-size:12px;"></i>' : '');
+    document.getElementById('musicCreatorLink').href = 'profile.php?id=' + t.uploader_id;
+  
+    
+    const likeBtn = document.getElementById('musicLikeBtn');
+    const favBtn  = document.getElementById('musicFavBtn');
+    likeBtn.style.color = t.user_liked ? '#E84040' : 'var(--text-secondary)';
+    favBtn.style.color  = t.user_favorited ? '#FFD600' : 'var(--text-secondary)';
+    
+    
+    const followBtn = document.getElementById('musicFollowBtn');
+    if (followBtn) {
+        if (Number(t.uploader_id) === Number(currentUserId)) {
+            followBtn.style.display = 'none';
+        } else {
+            followBtn.style.display = 'inline-block';
+            followBtn.textContent = t.user_followed ? 'Followed' : 'Follow';
+            followBtn.style.background = t.user_followed ? 'rgba(255,255,255,0.15)' : '#6C5CE7';
+            followBtn.style.color = '#fff';
+        }
+    }
     audio.src = t.file_url;
     audio.play();
     updatePlayBtn(true);
+    
+    currentKontenId = t.id;
+    loadComments(t.id);
 }
 
 function backToList() {
@@ -508,7 +694,7 @@ function togglePlay() {
 
 function updatePlayBtn(playing) {
     document.getElementById('playPauseBtn').innerHTML =
-        playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+        playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play" style="margin-left:4px;"></i>';
 }
 
 function prevTrack() {
@@ -516,6 +702,56 @@ function prevTrack() {
 }
 function nextTrack() {
     playTrack((currentIndex + 1) % tracks.length);
+}
+
+function handleMusicLike() {
+    const t = tracks[currentIndex];
+    const fd = new FormData();
+    fd.append('action', 'like');
+    fd.append('konten_id', t.id);
+    fetch('api_action.php', {
+        method: 'POST',
+        body: fd
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            t.user_liked = (data.status === 'added') ? 1 : 0;
+            document.getElementById('musicLikeBtn').style.color = t.user_liked ? '#E84040' : 'var(--text-secondary)';
+        }
+    });
+}
+
+function handleMusicFav() {
+    const t = tracks[currentIndex];
+    const fd = new FormData();
+    fd.append('action', 'favorite');
+    fd.append('konten_id', t.id);
+    fetch('api_action.php', {
+        method: 'POST',
+        body: fd
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            t.user_favorited = (data.status === 'added') ? 1 : 0;
+            document.getElementById('musicFavBtn').style.color = t.user_favorited ? '#FFD600' : 'var(--text-secondary)';
+        }
+    });
+}
+
+function handleMusicFollow() {
+    const t = tracks[currentIndex];
+    const fd = new FormData();
+    fd.append('action', 'follow');
+    fd.append('target_id', t.uploader_id);
+    fetch('api_action.php', { method: 'POST', body: fd }).then(r => r.json()).then(data => {
+        if (data.success) {
+            t.user_followed = data.status === 'followed' ? 1 : 0;
+            const followBtn = document.getElementById('musicFollowBtn');
+            if (followBtn) {
+                followBtn.textContent = t.user_followed ? 'Followed' : 'Follow';
+                followBtn.style.background = t.user_followed ? 'var(--bg-surface-active)' : '#6C5CE7';
+                followBtn.style.color = t.user_followed ? 'var(--text-primary)' : '#fff';
+            }
+        }
+    });
 }
 
 audio.addEventListener('timeupdate', function() {
@@ -555,6 +791,67 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+document.addEventListener('keydown', function(e) {
+    const fullPlayer = document.getElementById('fullPlayerView');
+    if (fullPlayer && fullPlayer.style.display === 'block') {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            if (e.key === 'Escape') e.target.blur();
+            return;
+        }
+        if (e.key === 'Escape') backToList();
+        if (e.key === 'ArrowLeft') prevTrack();
+        if (e.key === 'ArrowRight') nextTrack();
+    }
+});
+
+async function loadComments(kontenId) {
+    const list = document.getElementById('commentList');
+    list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px;"><i class="fas fa-spinner fa-spin"></i></div>';
+    
+    const res  = await fetch('api_komentar.php?konten_id=' + kontenId);
+    const data = await res.json();
+    
+    document.getElementById('commentCount').textContent = 'Komentar (' + data.length + ')';
+    
+    if (!data.length) {
+        list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px;">Belum ada komentar. Jadilah yang pertama!</div>';
+        return;
+    }
+    
+    const defAv = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3C/svg%3E";
+    list.innerHTML = data.map(c => `
+        <div style="display:flex;gap:8px;margin-bottom:12px;" data-id="${c.id}">
+            <img src="${c.avatar || defAv}" onerror="this.src='${defAv}'"
+                 style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg-surface-active);">
+            <div style="flex:1;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:3px;">
+                    <a href="profile.php?id=${c.user_id}" style="color:inherit;text-decoration:none;">@${c.username}</a>
+                </div>
+                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${c.teks}</div>
+            </div>
+        </div>
+    `).join('');
+    list.scrollTop = list.scrollHeight;
+}
+
+async function submitComment() {
+    const input = document.getElementById('commentInput');
+    const teks  = input.value.trim();
+    if (!teks || !currentKontenId) return;
+    
+    input.disabled = true;
+    const res  = await fetch('api_komentar.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({konten_id: currentKontenId, teks})
+    });
+    const data = await res.json();
+    
+    input.value    = '';
+    input.disabled = false;
+    if (data.success) loadComments(currentKontenId);
+}
 </script>
 
 <?php endif; ?>
@@ -681,86 +978,193 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     </script>
 
-<!-- Video Fullscreen Modal -->
+<style>
+#videoModal {
+    background: var(--bg-primary);
+}
+body.moodspace-mode #videoModal::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);
+    z-index: -1;
+    pointer-events: none;
+}
+#videoModal .ms-player-container {
+    transition: transform 0.3s, max-width 0.3s;
+    position: relative;
+    z-index: 1; 
+}
+#videoModal.ms-video-expanded .video-comment-panel {
+    display: block !important;
+}
+@media (min-width: 861px) {
+    #videoModal.ms-video-expanded .ms-player-container {
+        transform: translateX(-180px);
+    }
+}
+@media (max-width: 860px) {
+    #videoModal.ms-video-expanded .ms-player-container {
+        max-width: 540px !important;
+    }
+    #videoModal .video-comment-panel {
+        position: relative !important;
+        right: 0 !important;
+        width: 100% !important;
+        margin-top: 20px;
+        height: auto !important;
+        max-height: 400px !important;
+    }
+    #videoModal .video-comment-panel > div {
+        height: auto !important;
+        max-height: 400px !important;
+    }
+}
+</style>
+
 <div id="videoModal" style="
     display:none;
     position:fixed;inset:0;
-    background:rgba(0,0,0,0.95);
+    background:var(--bg-primary);
     z-index:10000;
     align-items:center;justify-content:center;
-    flex-direction:column;
+    overflow-y:auto;
+    padding: 20px 0;
 " onclick="closeVideoModal(event)">
 
+
+
     <button onclick="closeVideoModal(null, true)" style="
-        position:absolute;top:20px;right:20px;
-        background:rgba(255,255,255,0.1);border:none;
-        color:#fff;width:44px;height:44px;border-radius:50%;
-        font-size:20px;cursor:pointer;display:flex;
-        align-items:center;justify-content:center;
-        transition:background 0.2s;z-index:10001;
-    " onmouseover="this.style.background='rgba(255,255,255,0.2)'"
-       onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-        <i class="fas fa-times"></i>
+        position:fixed;top:24px;left:24px;
+        background:none;border:none;color:var(--text-secondary);cursor:pointer;
+        font-size:15px;padding:0;display:inline-flex;align-items:center;gap:8px;
+        font-family:inherit;z-index:10001;font-weight:500;
+    ">
+        <i class="fas fa-chevron-left"></i> Kembali
     </button>
 
-    <div id="videoModalTitle" style="
-        color:#F0EEF8;font-size:16px;font-weight:600;
-        margin-bottom:16px;text-align:center;
-        max-width:80%;opacity:0.9;
-    "></div>
+    <div class="ms-player-container" style="width:90vw; max-width:960px; transition:max-width 0.3s; margin:auto;" id="videoPlayerContainer">
+        <div class="ms-player-left" style="display:flex;flex-direction:column;align-items:center;width:100%;">
+            
+            <div id="videoCreatorBar" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;width:100%;">
+                <a id="videoCreatorLink" href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;flex:1;">
+                    <img id="videoCreatorAvatar" src="" alt=""
+                         style="width:38px;height:38px;border-radius:50%;object-fit:cover;background:#333;flex-shrink:0;">
+                    <div>
+                        <div id="videoCreatorName" style="color:var(--text-primary);font-size:14px;font-weight:600;"></div>
+                    </div>
+                </a>
+                <button id="videoFollowBtn"
+                        onclick="handleVideoFollow()"
+                        style="background:#6C5CE7;border:none;border-radius:20px;color:#fff;
+                               font-size:12px;font-weight:600;padding:7px 18px;cursor:pointer;display:inline-block;">
+                    Follow
+                </button>
+            </div>
 
-    <div style="position:relative;width:90vw;max-width:960px;">
-        <video id="modalVideo" controls style="
-            width:100%;border-radius:12px;
-            max-height:75vh;background:#000;
-            display:block;
-        "></video>
-    </div>
+            <div id="videoModalTitle" style="
+                color:var(--text-primary);font-size:16px;font-weight:600;
+                margin-bottom:16px;text-align:center;
+                width:100%;opacity:0.9;
+            "></div>
 
-    <div style="
-        display:flex;align-items:center;gap:32px;
-        margin-top:24px;
-    ">
-        <button onclick="prevVideo()" style="
-            background:rgba(255,255,255,0.1);border:none;
-            color:rgba(255,255,255,0.8);
-            width:52px;height:52px;border-radius:50%;
-            font-size:18px;cursor:pointer;
-            display:flex;align-items:center;justify-content:center;
-            transition:all 0.2s;
-        " onmouseover="this.style.background='rgba(255,255,255,0.2)'"
-           onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-            <i class="fas fa-step-backward"></i>
-        </button>
+            <div style="position:relative;width:100%;">
+                <video id="modalVideo" controls style="
+                    width:100%;border-radius:12px;
+                    max-height:75vh;background:#000;
+                    display:block;
+                "></video>
+            </div>
 
-        <div id="videoModalMeta" style="
-            text-align:center;
-            color:rgba(240,238,248,0.5);
-            font-size:13px;
-            min-width:80px;
-        "></div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-top:20px;width:100%;">
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:14px;">
+                    <button id="videoFavBtn" onclick="handleVideoFav()"
+                            style="background:var(--bg-surface);border:none;border-radius:50%;
+                                   width:46px;height:46px;color:var(--text-secondary);font-size:14px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+                            title="Favorit">
+                        <i class="fas fa-bookmark"></i>
+                    </button>
+                    <button onclick="prevVideo()"
+                            style="background:var(--bg-surface);border:none;color:var(--text-secondary);
+                                   width:46px;height:46px;border-radius:50%;font-size:16px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;transition:all 0.2s;">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                </div>
 
-        <button onclick="nextVideo()" style="
-            background:rgba(255,255,255,0.1);border:none;
-            color:rgba(255,255,255,0.8);
-            width:52px;height:52px;border-radius:50%;
-            font-size:18px;cursor:pointer;
-            display:flex;align-items:center;justify-content:center;
-            transition:all 0.2s;
-        " onmouseover="this.style.background='rgba(255,255,255,0.2)'"
-           onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-            <i class="fas fa-step-forward"></i>
-        </button>
+                <div style="display:flex;justify-content:center;padding:0 14px;">
+                    <button id="videoLikeBtn" onclick="handleVideoLike()"
+                            style="background:var(--bg-surface);border:none;border-radius:50%;
+                                   width:52px;height:52px;color:var(--text-secondary);font-size:20px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+                            title="Like">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:flex-start;gap:14px;">
+                    <button onclick="nextVideo()"
+                            style="background:var(--bg-surface);border:none;color:var(--text-secondary);
+                                   width:46px;height:46px;border-radius:50%;font-size:16px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;transition:all 0.2s;">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button onclick="toggleVideoCommentPanel()"
+                            style="background:var(--bg-surface);border:none;border-radius:50%;
+                                   width:46px;height:46px;color:var(--text-secondary);font-size:18px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+                            title="Komentar">
+                        <i class="fas fa-comment-dots"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="ms-player-right video-comment-panel" style="display:none; position:absolute; right:-380px; top:0; width:360px; height:100%; z-index:100;">
+            <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:20px;display:flex;flex-direction:column;height:100%;max-height:75vh;">
+                <div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-comment"></i>
+                    <span id="videoCommentCount">Komentar</span>
+                </div>
+                <div id="videoCommentList" style="flex:1;overflow-y:auto;margin-bottom:16px;padding-right:8px;"></div>
+                <div style="display:flex;gap:10px;align-items:center;margin-top:auto;">
+                    <input id="videoCommentInput" type="text" placeholder="Tulis komentar..."
+                           maxlength="500"
+                           style="flex:1;background:var(--bg-surface);border:1px solid var(--border-color);
+                                  border-radius:24px;padding:12px 16px;color:var(--text-primary);font-size:13px;
+                                  outline:none;font-family:inherit;"
+                           onkeydown="if(event.key==='Enter') submitVideoComment()">
+                    <button onclick="submitVideoComment()"
+                            style="background:#6C5CE7;border:none;border-radius:50%;width:42px;height:42px;
+                                   color:#fff;font-size:15px;cursor:pointer;flex-shrink:0;
+                                   display:flex;align-items:center;justify-content:center;transition:background 0.2s;"
+                            onmouseover="this.style.background='#5a4bcf'" onmouseout="this.style.background='#6C5CE7'">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
+
 <script>
+const currentUserId = <?php echo isset($me['id']) ? $me['id'] : 0; ?>;
 const videoList = <?php echo json_encode(array_values(array_filter(array_map(function($v) {
     if (empty($v['file_url'])) return null;
     return [
-        'judul'    => $v['judul'],
-        'sumber'   => $v['sumber'],
-        'file_url' => $v['file_url'],
+        'id'             => $v['id'],
+        'judul'          => $v['judul'],
+        'sumber'         => $v['sumber'],
+        'file_url'       => $v['file_url'],
+        'uploader_id'    => $v['uploaded_by'],
+        'uploader_name'  => $v['uploader_name'] ?? $v['sumber'],
+        'uploader_avatar'=> $v['uploader_avatar'] ?? '',
+        'uploader_role'  => $v['uploader_role'] ?? '',
+        'user_liked'     => !empty($v['user_liked']) ? 1 : 0,
+        'user_favorited' => !empty($v['user_favorited']) ? 1 : 0,
+        'user_followed'  => !empty($v['user_followed']) ? 1 : 0,
     ];
 }, $video)))); ?>;
 
@@ -780,7 +1184,42 @@ function openVideoModal(index) {
     
     modalVideo.src = v.file_url;
     modalTitle.textContent = v.judul;
-    modalMeta.textContent = (index + 1) + ' / ' + videoList.length;
+    if (document.getElementById('videoModalMeta')) {
+        document.getElementById('videoModalMeta').textContent = (index + 1) + ' / ' + videoList.length;
+    }
+
+    
+    const creatorProfileUrl = 'profile.php?id=' + v.uploader_id;
+    document.getElementById('videoCreatorLink').href = creatorProfileUrl;
+    document.getElementById('videoCreatorName').innerHTML = v.uploader_name + (v.uploader_role === 'creator' ? ' <i class="fas fa-check-circle" style="color:#6C5CE7;font-size:12px;"></i>' : '');
+    const defAv = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3C/svg%3E";
+    document.getElementById('videoCreatorAvatar').src = v.uploader_avatar || defAv;
+    
+    
+    const likeBtn = document.getElementById('videoLikeBtn');
+    const favBtn = document.getElementById('videoFavBtn');
+    likeBtn.style.color = v.user_liked ? '#E84040' : 'var(--text-secondary)';
+    likeBtn.style.background = v.user_liked ? 'rgba(232,64,64,0.2)' : 'var(--bg-surface)';
+    favBtn.style.color = v.user_favorited ? '#FFD600' : 'var(--text-secondary)';
+    favBtn.style.background = v.user_favorited ? 'rgba(255,214,0,0.15)' : 'var(--bg-surface)';
+
+    
+    const followBtn = document.getElementById('videoFollowBtn');
+    const isFollowedInitial = v.user_followed === 1;
+    const isSelf = Number(v.uploader_id) === Number(currentUserId);
+    if (followBtn) {
+        if (isSelf) {
+            followBtn.style.display = 'none';
+        } else {
+            followBtn.style.display = 'inline-block';
+            followBtn.textContent = isFollowedInitial ? 'Followed' : 'Follow';
+            followBtn.style.background = isFollowedInitial ? 'var(--bg-surface-active)' : '#6C5CE7';
+            followBtn.style.color = isFollowedInitial ? 'var(--text-primary)' : '#fff';
+            followBtn.style.border = 'none';
+        }
+    }
+    
+    loadVideoComments(v.id);
     
     modalEl.style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -800,6 +1239,65 @@ function closeVideoModal(e, force) {
     document.body.style.overflow = '';
 }
 
+function toggleVideoCommentPanel() {
+    const modal = document.getElementById('videoModal');
+    modal.classList.toggle('ms-video-expanded');
+}
+
+async function loadVideoComments(kontenId) {
+    const list = document.getElementById('videoCommentList');
+    list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px;"><i class="fas fa-spinner fa-spin"></i></div>';
+    
+    const res  = await fetch('api_komentar.php?konten_id=' + kontenId);
+    const data = await res.json();
+    
+    document.getElementById('videoCommentCount').textContent = 'Komentar (' + data.length + ')';
+    
+    if (!data.length) {
+        list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px;">Belum ada komentar. Jadilah yang pertama!</div>';
+        return;
+    }
+    
+    const defAv = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3C/svg%3E";
+    list.innerHTML = data.map(c => `
+        <div style="display:flex;gap:8px;margin-bottom:12px;" data-id="${c.id}">
+            <img src="${c.avatar || defAv}" onerror="this.src='${defAv}'"
+                 style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg-surface-active);">
+            <div style="flex:1;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:3px;">
+                    <a href="profile.php?id=${c.user_id}" style="color:inherit;text-decoration:none;">@${c.username}</a>
+                </div>
+                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${c.teks}</div>
+            </div>
+        </div>
+    `).join('');
+    list.scrollTop = list.scrollHeight;
+}
+
+async function submitVideoComment() {
+    const input = document.getElementById('videoCommentInput');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    const v = videoList[currentVideoIndex];
+    if (!v) return;
+    
+    input.disabled = true;
+    const res = await fetch('api_komentar.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({konten_id: v.id, teks: text})
+    });
+    const data = await res.json();
+    
+    input.value = '';
+    input.disabled = false;
+    
+    if (data.success) {
+        loadVideoComments(v.id);
+    }
+}
+
 function prevVideo() {
     if (!videoList || !videoList.length) return;
     const newIndex = (currentVideoIndex - 1 + videoList.length) % videoList.length;
@@ -810,6 +1308,74 @@ function nextVideo() {
     if (!videoList || !videoList.length) return;
     const newIndex = (currentVideoIndex + 1) % videoList.length;
     openVideoModal(newIndex);
+}
+
+function handleVideoLike() {
+    const v = videoList[currentVideoIndex];
+    if (!v) return;
+    const fd = new FormData();
+    fd.append('action', 'like');
+    fd.append('konten_id', v.id);
+    fetch('api_action.php', {
+        method: 'POST',
+        body: fd
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            v.user_liked = (data.status === 'added') ? 1 : 0;
+            const btn = document.getElementById('videoLikeBtn');
+            btn.style.color = v.user_liked ? '#E84040' : 'rgba(255,255,255,0.4)';
+            btn.style.background = v.user_liked ? 'rgba(232,64,64,0.2)' : 'rgba(255,255,255,0.1)';
+        }
+    });
+}
+function handleVideoFav() {
+    const v = videoList[currentVideoIndex];
+    if (!v) return;
+    const fd = new FormData();
+    fd.append('action', 'favorite');
+    fd.append('konten_id', v.id);
+    fetch('api_action.php', {
+        method: 'POST',
+        body: fd
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            v.user_favorited = (data.status === 'added') ? 1 : 0;
+            const btn = document.getElementById('videoFavBtn');
+            btn.style.color = v.user_favorited ? '#FFD600' : 'rgba(255,255,255,0.4)';
+            btn.style.background = v.user_favorited ? 'rgba(255,214,0,0.15)' : 'rgba(255,255,255,0.08)';
+        }
+    });
+}
+function handleVideoDislike() {
+    const btn = document.getElementById('videoDislikeBtn');
+    const active = btn.style.color === 'rgb(108, 92, 231)';
+    btn.style.color = active ? 'rgba(255,255,255,0.45)' : '#6C5CE7';
+    btn.style.background = active ? 'rgba(255,255,255,0.08)' : 'rgba(108,92,231,0.2)';
+}
+function handleVideoFollow() {
+    const v = videoList[currentVideoIndex];
+    if (!v) return;
+    const fd = new FormData();
+    fd.append('action', 'follow');
+    fd.append('target_id', v.uploader_id);
+    fetch('api_action.php', { method: 'POST', body: fd })
+      .then(res => res.json())
+      .then(data => {
+          v.user_followed = data.status === 'followed' ? 1 : 0;
+          const followBtn = document.getElementById('videoFollowBtn');
+          const followBtnMobile = document.getElementById('videoCreatorMobile').querySelector('button');
+          if (followBtn) {
+              followBtn.textContent = v.user_followed ? 'Followed' : 'Follow';
+              followBtn.style.background = v.user_followed ? 'rgba(255,255,255,0.15)' : '#6C5CE7';
+              followBtn.style.color = '#fff';
+              followBtn.style.border = 'none';
+          }
+          if (followBtnMobile) {
+              followBtnMobile.textContent = v.user_followed ? '✓' : '+';
+          }
+      }).catch(err => {
+        console.error('Follow error:', err);
+    });
 }
 
 document.addEventListener('keydown', function(e) {
@@ -934,6 +1500,31 @@ if (modalVideo) {
 })();
 </script>
 
+    <script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('main-sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const isOpen = sidebar.classList.contains('open');
+        if (isOpen) {
+            closeSidebar();
+        } else {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    function closeSidebar() {
+        document.getElementById('main-sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    document.querySelectorAll('.ms-sidebar a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            closeSidebar();
+        });
+    });
+    </script>
     <script src="script.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
