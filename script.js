@@ -17,17 +17,17 @@ function toggleTheme() {
     if (theme === 'dark') theme = 'light';
     else if (theme === 'light') theme = 'moodspace';
     else theme = 'dark';
-    
+
     setTheme(theme);
 }
 
 function setTheme(theme) {
     const body = document.body;
     body.classList.remove('light-mode', 'moodspace-mode');
-    
+
     if (theme === 'light') body.classList.add('light-mode');
     else if (theme === 'moodspace') body.classList.add('moodspace-mode');
-    
+
     localStorage.setItem('theme', theme);
     updateThemeIcon(theme);
     handleMoodspaceCycle(theme);
@@ -45,7 +45,7 @@ function updateThemeIcon(theme) {
 function handleMoodspaceCycle(theme) {
     clearInterval(moodCycleInterval);
     const body = document.body;
-    
+
     if (theme === 'moodspace' && !body.classList.contains('mood-active')) {
         let cycleIndex = 0;
         const updateColor = () => {
@@ -55,7 +55,8 @@ function handleMoodspaceCycle(theme) {
             cycleIndex = (cycleIndex + 1) % moodColorsCycle.length;
         };
         updateColor();
-        moodCycleInterval = setInterval(updateColor, 2000);
+        const cycleSpeed = window.location.pathname.includes('messages.php') ? 5000 : 2500;
+        moodCycleInterval = setInterval(updateColor, cycleSpeed);
     } else {
         document.documentElement.style.removeProperty('--mood-color-rgb');
         document.documentElement.style.removeProperty('--mood-color');
@@ -78,32 +79,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-document.addEventListener('click', async function(e) {
+document.addEventListener('click', async function (e) {
     const btn = e.target.closest('.btn-action');
     if (!btn) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
-    
+
     const id = btn.getAttribute('data-id');
     const type = btn.getAttribute('data-type');
     const icon = btn.querySelector('i');
     const countSpan = btn.querySelector('.count-text');
-    
+
     if (!id || !type) return;
-    
+
     try {
         const formData = new FormData();
         formData.append('action', type);
         formData.append('konten_id', id);
-        
+
         const response = await fetch('api_action.php', {
             method: 'POST',
             body: formData
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             if (countSpan) {
                 countSpan.textContent = data.count;
@@ -149,30 +150,30 @@ document.addEventListener('click', async function(e) {
 
 const followBtn = document.getElementById('followBtn');
 if (followBtn) {
-    followBtn.addEventListener('click', async function() {
+    followBtn.addEventListener('click', async function () {
         const targetId = this.getAttribute('data-target-id');
         const isFollowing = this.getAttribute('data-following') === '1';
-        
+
         this.disabled = true;
         this.textContent = '...';
-        
+
         try {
             const formData = new FormData();
             formData.append('action', 'follow');
             formData.append('target_id', targetId);
-            
+
             const response = await fetch('api_action.php', {
                 method: 'POST',
                 body: formData
             });
             const data = await response.json();
-            
+
             if (data.success) {
                 const nowFollowing = data.status === 'followed';
                 this.setAttribute('data-following', nowFollowing ? '1' : '0');
                 this.textContent = nowFollowing ? 'Followed' : 'Follow';
                 this.className = 'ms-btn ' + (nowFollowing ? 'ms-btn-outline' : 'ms-btn-primary') + ' btn-follow';
-                
+
                 const followersEl = document.getElementById('followersCountText');
                 if (followersEl) followersEl.textContent = Number(data.followers_count).toLocaleString();
             } else {
@@ -187,3 +188,88 @@ if (followBtn) {
         }
     });
 }
+
+window.addEventListener('scroll', () => {
+    const nav = document.getElementById('main-navbar');
+    if (nav) nav.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof tippy !== 'undefined') {
+        tippy('[data-tippy-content]', {
+            theme: 'translucent',
+            placement: 'top',
+            animation: 'shift-away',
+            duration: [150, 100],
+        });
+    }
+});
+
+function timeAgo(dateStr) {
+    const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+    if (diff < 60) return 'Baru saja';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'j';
+    return Math.floor(diff / 86400) + 'h';
+}
+
+function renderCommentItem(c, currentUserId) {
+    const defAv = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3C/svg%3E";
+    const isOwn = String(c.user_id) === String(currentUserId);
+    return `
+    <div class="ms-comment-item animate__animated animate__fadeInUp" data-id="${c.id}">
+        <img class="ms-comment-item__avatar"
+             src="${c.avatar || c.profile_picture || defAv}"
+             onerror="this.src='${defAv}'"
+             alt="${c.display_name || c.username}">
+        <div class="ms-comment-item__body">
+            <div class="ms-comment-item__meta">
+                <a href="profile.php?id=${c.user_id}" class="ms-comment-item__username">
+                    ${c.display_name || c.username}
+                </a>
+                <span class="ms-comment-item__time">${timeAgo(c.created_at)}</span>
+            </div>
+            <div class="ms-comment-item__text">${c.teks}</div>
+            <div class="ms-comment-item__actions">
+                ${isOwn ? `<button class="ms-comment-item__action-btn delete" onclick="deleteComment(${c.id}, this)">
+                    <i class="fas fa-trash-alt"></i> Hapus
+                </button>` : ''}
+            </div>
+        </div>
+    </div>`;
+}
+
+async function deleteComment(id, btn) {
+    if (!confirm('Hapus komentar ini?')) return;
+    const el = btn.closest('.ms-comment-item');
+    const res = await fetch('api_komentar.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    if (data.success) {
+        el.style.animation = 'fadeOutLeft 0.2s ease forwards';
+        setTimeout(() => el.remove(), 200);
+    }
+}
+
+async function checkUnreadBadge() {
+    try {
+        const res = await fetch('api_messages.php?action=unread_count');
+        const data = await res.json();
+        const badge = document.getElementById('msgBadge');
+        if (badge) {
+            if (data.count > 0) {
+                badge.textContent = data.count > 99 ? '99+' : data.count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (e) { }
+}
+checkUnreadBadge();
+setInterval(checkUnreadBadge, 30000);
+
+

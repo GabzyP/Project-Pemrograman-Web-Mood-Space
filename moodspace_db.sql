@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 07, 2026 at 06:59 PM
+-- Generation Time: Jun 08, 2026 at 02:51 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -41,7 +41,8 @@ CREATE TABLE `favorites` (
 INSERT INTO `favorites` (`id`, `user_id`, `konten_id`, `created_at`) VALUES
 (13, 7, 18, '2026-06-03 14:21:32'),
 (16, 5, 18, '2026-06-07 14:00:34'),
-(25, 5, 26, '2026-06-07 16:08:14');
+(25, 5, 26, '2026-06-07 16:08:14'),
+(33, 5, 25, '2026-06-07 17:50:21');
 
 -- --------------------------------------------------------
 
@@ -62,11 +63,29 @@ CREATE TABLE `follows` (
 
 INSERT INTO `follows` (`id`, `follower_id`, `following_id`, `created_at`) VALUES
 (1, 7, 6, '2026-06-03 14:16:02'),
-(2, 3, 2, '2026-06-03 17:32:23'),
 (3, 8, 3, '2026-06-05 05:55:29'),
 (4, 8, 5, '2026-06-05 06:01:52'),
 (12, 3, 8, '2026-06-07 14:47:34'),
-(32, 5, 3, '2026-06-07 16:39:11');
+(32, 5, 3, '2026-06-07 16:39:11'),
+(33, 5, 4, '2026-06-07 17:42:40'),
+(34, 5, 2, '2026-06-07 17:42:45'),
+(35, 5, 6, '2026-06-07 17:42:55'),
+(39, 3, 2, '2026-06-08 03:50:45'),
+(46, 3, 5, '2026-06-08 03:56:47'),
+(47, 3, 6, '2026-06-08 04:06:56'),
+(48, 3, 4, '2026-06-08 04:07:03'),
+(49, 2, 4, '2026-06-08 12:30:46'),
+(50, 2, 6, '2026-06-08 12:30:53'),
+(51, 4, 3, '2026-06-08 12:31:21'),
+(52, 4, 2, '2026-06-08 12:31:30'),
+(53, 4, 6, '2026-06-08 12:31:36'),
+(54, 4, 5, '2026-06-08 12:31:43'),
+(55, 6, 3, '2026-06-08 12:32:11'),
+(56, 6, 5, '2026-06-08 12:32:19'),
+(57, 6, 2, '2026-06-08 12:32:25'),
+(58, 6, 4, '2026-06-08 12:32:32'),
+(59, 2, 3, '2026-06-08 12:33:06'),
+(60, 2, 5, '2026-06-08 12:33:14');
 
 -- --------------------------------------------------------
 
@@ -89,7 +108,8 @@ CREATE TABLE `komentar` (
 INSERT INTO `komentar` (`id`, `konten_id`, `user_id`, `teks`, `created_at`) VALUES
 (2, 26, 5, 'sedih bgt cik', '2026-06-07 15:41:12'),
 (3, 16, 5, 'sedih bgt cik', '2026-06-07 16:29:20'),
-(4, 18, 5, 'kasian takaki kun', '2026-06-07 16:37:00');
+(4, 18, 5, 'kasian takaki kun', '2026-06-07 16:37:00'),
+(5, 19, 3, 'gakuat lagi ye', '2026-06-08 04:00:52');
 
 -- --------------------------------------------------------
 
@@ -118,7 +138,6 @@ CREATE TABLE `konten_mood` (
 
 INSERT INTO `konten_mood` (`id`, `uploaded_by`, `mood`, `tipe`, `judul`, `sumber`, `media_id`, `file_url`, `cover_url`, `public_id`, `durasi`, `created_at`) VALUES
 (11, 3, 'joy', 'quote', 'Senang bisa mengenalmu', 'Gabuzy', '', 'https://res.cloudinary.com/dcb7iqteo/image/upload/v1780473626/moodspace_konten/irzreqloavanh5fpekjm.jpg', NULL, 'moodspace_konten/irzreqloavanh5fpekjm', NULL, '2026-06-03 08:00:25'),
-(15, 3, 'joy', 'music', 'Happy Ajalah', 'GABUZY', '', 'https://res.cloudinary.com/dcb7iqteo/video/upload/v1780482121/moodspace_konten/nnxmsxhkuh2gtzgdoiuf.mp3', 'https://res.cloudinary.com/dcb7iqteo/image/upload/v1780482124/moodspace/covers/mrgqciwgf3jzmkhdnnwd.png', 'moodspace_konten/nnxmsxhkuh2gtzgdoiuf', '4', '2026-06-03 10:22:05'),
 (16, 3, 'sadness', 'music', 'Multo', 'Cup of Joe', '', 'https://res.cloudinary.com/dcb7iqteo/video/upload/v1780484570/moodspace_konten/fuwczeystoi9mrmirub8.mp3', 'https://res.cloudinary.com/dcb7iqteo/image/upload/v1780484575/moodspace/covers/rrf3ohtvi2prbyus0s8g.png', 'moodspace_konten/fuwczeystoi9mrmirub8', '3', '2026-06-03 11:02:56'),
 (17, 3, 'joy', 'quote', 'Happiness', 'Gabuzy', '', 'https://res.cloudinary.com/dcb7iqteo/image/upload/v1780487799/moodspace_konten/srvwbcam522vei9hieff.jpg', NULL, 'moodspace_konten/srvwbcam522vei9hieff', NULL, '2026-06-03 11:56:39'),
 (18, 3, 'sadness', 'video', 'Lihat Bunga Sakura Lagi', 'Gabuzy', '', 'https://res.cloudinary.com/dcb7iqteo/video/upload/v1780487903/moodspace_konten/bty8cmww4twztwtqvij5.mp4', NULL, 'moodspace_konten/bty8cmww4twztwtqvij5', '0', '2026-06-03 11:58:24'),
@@ -153,7 +172,9 @@ INSERT INTO `konten_mood` (`id`, `uploaded_by`, `mood`, `tipe`, `judul`, `sumber
 (48, 3, 'sadness', 'video', 'Selalu Kecewa', 'GABUZY', '', 'https://res.cloudinary.com/dcb7iqteo/video/upload/v1780546311/moodspace_konten/fwrfgwvrsivtgfyau9lf.mp4', NULL, 'moodspace_konten/fwrfgwvrsivtgfyau9lf', '0:42', '2026-06-04 04:11:51'),
 (49, 3, 'sadness', 'video', 'Fly Away Bongseok', 'GABUZY', '', 'https://res.cloudinary.com/dcb7iqteo/video/upload/v1780546388/moodspace_konten/xbz75wxkofqdx5q3jnx4.mp4', NULL, 'moodspace_konten/xbz75wxkofqdx5q3jnx4', '0:34', '2026-06-04 04:13:08'),
 (50, 3, 'sadness', 'video', 'Bagaimana Bisa Aku Melepaskanmu', 'GABUZY', '', 'https://res.cloudinary.com/dcb7iqteo/video/upload/v1780546540/moodspace_konten/uwwnjilpzuhr2sc1cfys.mp4', NULL, 'moodspace_konten/uwwnjilpzuhr2sc1cfys', '0:38', '2026-06-04 04:15:41'),
-(51, 3, 'sadness', 'video', '0 UCL', 'GABUZY', '', 'https://res.cloudinary.com/dcb7iqteo/video/upload/v1780546693/moodspace_konten/h1l9ao1w20ngmhfsvrco.mp4', NULL, 'moodspace_konten/h1l9ao1w20ngmhfsvrco', '0:34', '2026-06-04 04:18:14');
+(51, 3, 'sadness', 'video', '0 UCL', 'GABUZY', '', 'https://res.cloudinary.com/dcb7iqteo/video/upload/v1780546693/moodspace_konten/h1l9ao1w20ngmhfsvrco.mp4', NULL, 'moodspace_konten/h1l9ao1w20ngmhfsvrco', '0:34', '2026-06-04 04:18:14'),
+(52, 5, 'anger', 'video', 'Escape From Chorh-Gom Prison', 'adeptri', '', 'https://res.cloudinary.com/dcb7iqteo/video/upload/v1780852042/moodspace_konten/y4xgakcbsijrfe6adrkn.mp4', NULL, 'moodspace_konten/y4xgakcbsijrfe6adrkn', '1:01', '2026-06-07 17:07:23'),
+(53, 2, 'joy', 'music', 'You\'re on Your Own, Kid', 'Taylor Swift', '', 'https://res.cloudinary.com/dcb7iqteo/video/upload/v1780922586/moodspace_konten/owdykvtskjry7zecvdzj.mp3', 'https://res.cloudinary.com/dcb7iqteo/image/upload/v1780922588/moodspace/covers/hemul4hyun0wd1tokuel.png', 'moodspace_konten/owdykvtskjry7zecvdzj', '3:14', '2026-06-08 12:43:09');
 
 -- --------------------------------------------------------
 
@@ -179,7 +200,39 @@ INSERT INTO `likes` (`id`, `user_id`, `konten_id`, `created_at`) VALUES
 (24, 8, 18, '2026-06-05 06:01:21'),
 (27, 5, 18, '2026-06-07 14:00:44'),
 (28, 5, 31, '2026-06-07 14:26:58'),
-(30, 5, 26, '2026-06-07 15:29:52');
+(30, 5, 26, '2026-06-07 15:29:52'),
+(36, 5, 22, '2026-06-07 17:32:43'),
+(39, 5, 20, '2026-06-07 17:50:15'),
+(40, 5, 23, '2026-06-07 17:50:18'),
+(46, 3, 52, '2026-06-08 11:59:06');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `messages`
+--
+
+CREATE TABLE `messages` (
+  `id` int(11) NOT NULL,
+  `sender_id` int(11) NOT NULL,
+  `receiver_id` int(11) NOT NULL,
+  `teks` text NOT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `messages`
+--
+
+INSERT INTO `messages` (`id`, `sender_id`, `receiver_id`, `teks`, `is_read`, `created_at`) VALUES
+(1, 3, 2, 'woi', 1, '2026-06-08 03:21:54'),
+(2, 2, 3, 'woi juga', 1, '2026-06-08 03:23:08'),
+(3, 3, 2, 'woi woi woi', 0, '2026-06-08 03:30:42'),
+(4, 3, 8, 'woi', 0, '2026-06-08 03:32:23'),
+(5, 3, 5, 'woi', 0, '2026-06-08 03:48:16'),
+(6, 3, 6, 'woi', 0, '2026-06-08 03:54:46'),
+(7, 3, 4, 'woi', 0, '2026-06-08 12:05:26');
 
 -- --------------------------------------------------------
 
@@ -206,11 +259,11 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password`, `role`, `username`, `display_name`, `bio`, `profile_picture`, `following_count`, `followers_count`, `likes_count`) VALUES
-(2, 'rahma@gmail.com', '$2y$10$R.qzmkBtpEAxFtCJ82XikunJiZmTjuYc.t30tlAYOzhkXhyWmS0Nm', 'creator', 'rahma', 'rahma', '', 'assets/uploads/avatar_2_1780487114.png', 0, 1, 0),
-(3, 'gabuzy@gmail.com', '$2y$10$Jtp6olwz4pnKHWqh3dC0hueTr4DjttrSIFASv/4mbhs2yvc4FTYsm', 'creator', 'gabuzy', 'GABUZY', 'jika aku mati maka manusia sudah punah', 'assets/uploads/avatar_3_1780466281.webp', 2, 2, 0),
-(4, 'kezia@gmail.com', '$2y$10$PJn7y8.UxGgNgySa7eZr0.y0CFQ28w0wTJZJhXtnZhRy82/MAMkI.', 'creator', 'kezia', 'kezia', '', 'assets/uploads/avatar_4_1780487158.png', 0, 0, 0),
-(5, 'adeptri@gmail.com', '$2y$10$DTHXc2lnHDEQ.X9x40Aq4Obxbm1hLmkNLMOTXx8GeBBVqKEgj1TUO', 'creator', 'adeptri', 'adeptri', '', 'assets/uploads/avatar_5_1780487208.jpeg', 1, 1, 0),
-(6, 'angel@gmail.com', '$2y$10$f9t790HWkTbnZoDuFZbKmOIOU5vX6wdVLdhQfG/mp6zYBAbkjamRm', 'creator', 'angel', 'angel', '', 'assets/uploads/avatar_6_1780487262.jpeg', 0, 1, 0),
+(2, 'rahma@gmail.com', '$2y$10$R.qzmkBtpEAxFtCJ82XikunJiZmTjuYc.t30tlAYOzhkXhyWmS0Nm', 'creator', 'rahma', 'rahma', '', 'assets/uploads/avatar_2_1780487114.png', 4, 4, 0),
+(3, 'gabuzy@gmail.com', '$2y$10$Jtp6olwz4pnKHWqh3dC0hueTr4DjttrSIFASv/4mbhs2yvc4FTYsm', 'creator', 'gabuzy', 'GABUZY', 'jika aku mati maka manusia sudah punah', 'assets/uploads/avatar_3_1780466281.webp', 5, 5, 0),
+(4, 'kezia@gmail.com', '$2y$10$PJn7y8.UxGgNgySa7eZr0.y0CFQ28w0wTJZJhXtnZhRy82/MAMkI.', 'creator', 'kezia', 'kezia', '', 'assets/uploads/avatar_4_1780487158.png', 4, 4, 0),
+(5, 'adeptri@gmail.com', '$2y$10$DTHXc2lnHDEQ.X9x40Aq4Obxbm1hLmkNLMOTXx8GeBBVqKEgj1TUO', 'creator', 'adeptri', 'adeptri', '', 'assets/uploads/avatar_5_1780487208.jpeg', 4, 5, 0),
+(6, 'angel@gmail.com', '$2y$10$f9t790HWkTbnZoDuFZbKmOIOU5vX6wdVLdhQfG/mp6zYBAbkjamRm', 'creator', 'angel', 'angel', '', 'assets/uploads/avatar_6_1780487262.jpeg', 4, 5, 0),
 (7, 'adeptri@yahoo.com', '$2y$10$5ZbtMi.fo/LCmOqoiwwkK.p24NoTbqxxILBkOSHDMLy6cD.U0RjyK', 'user', 'adeptri51', 'adeptri51', NULL, NULL, 1, 0, 0),
 (8, 'peter@gmail.com', '$2y$10$k8GnjOxx2nmCWhg2Z3UIkepKoA4s4jNJd7IPi9YwkWW.NJtCagYOS', 'user', 'peter', 'peter', '', 'assets/uploads/avatar_8_1780638914.jpg', 2, 1, 0);
 
@@ -256,6 +309,14 @@ ALTER TABLE `likes`
   ADD UNIQUE KEY `unique_like` (`user_id`,`konten_id`);
 
 --
+-- Indexes for table `messages`
+--
+ALTER TABLE `messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_conversation` (`sender_id`,`receiver_id`),
+  ADD KEY `idx_receiver_unread` (`receiver_id`,`is_read`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -269,31 +330,37 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `favorites`
 --
 ALTER TABLE `favorites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `follows`
 --
 ALTER TABLE `follows`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT for table `komentar`
 --
 ALTER TABLE `komentar`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `konten_mood`
 --
 ALTER TABLE `konten_mood`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `likes`
 --
 ALTER TABLE `likes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+
+--
+-- AUTO_INCREMENT for table `messages`
+--
+ALTER TABLE `messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -311,6 +378,13 @@ ALTER TABLE `users`
 ALTER TABLE `komentar`
   ADD CONSTRAINT `fk_komentar_konten` FOREIGN KEY (`konten_id`) REFERENCES `konten_mood` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_komentar_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `messages`
+--
+ALTER TABLE `messages`
+  ADD CONSTRAINT `fk_msg_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_msg_sender` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

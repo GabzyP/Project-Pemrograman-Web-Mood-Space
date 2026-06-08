@@ -86,7 +86,7 @@ body.moodspace-mode::before {
     content: '';
     position: fixed;
     inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.85) 100%);
     z-index: -1;
     pointer-events: none;
 }
@@ -94,7 +94,7 @@ body.moodspace-mode::before {
 body.moodspace-mode .ms-navbar {
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 body.moodspace-mode .ms-sidebar {
@@ -275,22 +275,23 @@ input {
 .ms-navbar__right {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 12px;
     min-width: 200px;
     justify-content: flex-end;
 }
 
 .ms-navbar__icon-btn {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     transition: background-color var(--transition-fast), color var(--transition-fast);
     position: relative;
+    padding: 0;
 }
 
 .ms-navbar__icon-btn:hover {
@@ -299,8 +300,8 @@ input {
 }
 
 .ms-navbar__avatar {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: var(--radius-full);
     background: var(--bg-surface-active);
     display: flex;
@@ -311,10 +312,15 @@ input {
     overflow: hidden;
     cursor: pointer;
     transition: box-shadow var(--transition-fast);
+    padding: 0;
 }
 
 .ms-navbar__avatar:hover {
     box-shadow: 0 0 0 2px var(--mood-color);
+}
+
+.theme-toggle {
+    margin-right: 0 !important;
 }
 
 
@@ -487,7 +493,11 @@ body.moodspace-mode .ms-sidebar__item.active {
     box-shadow: 0 0 12px currentColor;
 }
 
-@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
 
 
 .ms-sidebar__mood-avatar {
@@ -1051,7 +1061,7 @@ body.moodspace-mode .ms-sidebar__item.active {
 }
 
 .ms-sidebar-toggle {
-    display: none; 
+    display: none;
     background: transparent;
     border: none;
     color: var(--text-primary, #F0EEF8);
@@ -1064,7 +1074,7 @@ body.moodspace-mode .ms-sidebar__item.active {
 }
 
 .ms-sidebar-toggle:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 1400px) {
@@ -1104,9 +1114,10 @@ body.moodspace-mode .ms-sidebar__item.active {
         transform: translateX(-100%);
         transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
         overflow-y: auto;
-        padding-top: 64px; 
-        box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+        padding-top: 64px;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
     }
+
     .ms-sidebar.open {
         transform: translateX(0);
     }
@@ -1123,10 +1134,10 @@ body.moodspace-mode .ms-sidebar__item.active {
         display: none;
     }
 
-    .ms-sidebar-toggle { 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
+    .ms-sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 
@@ -1429,7 +1440,7 @@ body.moodspace-mode .ms-sidebar__item.active {
     justify-content: space-between;
     align-items: center;
     padding: 8px 10px;
-    background: linear-gradient(transparent, rgba(0,0,0,0.6));
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
     font-size: 0.75rem;
     font-weight: 700;
     color: #fff;
@@ -1456,7 +1467,7 @@ body.moodspace-mode .ms-sidebar__item.active {
     top: 0.5rem;
     right: 0.5rem;
     color: #fff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .ms-profile-empty {
@@ -1490,31 +1501,31 @@ body.moodspace-mode .ms-sidebar__item.active {
         text-align: center;
         gap: 1rem;
     }
-    
+
     .ms-profile-stats {
         justify-content: center;
     }
-    
+
     .ms-profile-actions {
         justify-content: center;
     }
-    
+
     .ms-profile-nav {
         justify-content: center;
     }
-    
+
     .ms-profile-tab {
         padding: 1rem 1rem;
         font-size: 1rem;
     }
-    
+
     .ms-profile-grid {
         column-count: 2;
     }
 }
 
 .ms-video-thumb:hover .video-overlay {
-    background: rgba(0,0,0,0.15) !important;
+    background: rgba(0, 0, 0, 0.15) !important;
 }
 
 .ms-video-thumb:hover .play-btn-big {
@@ -1534,14 +1545,348 @@ body.moodspace-mode .ms-sidebar__item.active {
     align-items: center;
     gap: 0.25rem;
 }
+
 .ms-stat-btn:hover {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
 }
+
 .ms-stat-btn strong {
     font-size: 1.1rem;
     color: var(--text-primary);
 }
+
 .ms-stat-btn span {
     font-size: 0.9rem;
     color: var(--text-secondary);
+}
+
+.ms-card,
+.ms-music-card,
+.ms-quote-card {
+    animation: fadeInUp 0.4s ease both;
+}
+
+.ms-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.ms-card:nth-child(2) {
+    animation-delay: 0.10s;
+}
+
+.ms-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.ms-card:nth-child(4) {
+    animation-delay: 0.20s;
+}
+
+.ms-card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.ms-card:nth-child(6) {
+    animation-delay: 0.30s;
+}
+
+.ms-skeleton {
+    background: linear-gradient(90deg,
+            var(--bg-surface) 25%,
+            var(--bg-surface-hover) 50%,
+            var(--bg-surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.ms-navbar.scrolled {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(15, 15, 15, 0.85) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.ms-comment-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 75vh;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+.ms-comment-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.ms-comment-panel__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.ms-comment-panel__title i {
+    color: #6C5CE7;
+    font-size: 16px;
+}
+
+.ms-comment-panel__close {
+    background: var(--bg-surface);
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-full);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.ms-comment-panel__close:hover {
+    background: var(--bg-surface-hover);
+    color: var(--text-primary);
+}
+
+.ms-comment-panel__list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    scroll-behavior: smooth;
+}
+
+.ms-comment-panel__list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.ms-comment-panel__list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ms-comment-panel__list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.ms-comment-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    transition: background 0.15s;
+    animation: fadeInUp 0.25s ease both;
+}
+
+.ms-comment-item:hover {
+    background: var(--bg-surface);
+}
+
+.ms-comment-item__avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    flex-shrink: 0;
+    margin-top: 2px;
+    background: var(--bg-surface-active);
+}
+
+.ms-comment-item__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.ms-comment-item__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.ms-comment-item__username {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.ms-comment-item__username:hover {
+    color: #6C5CE7;
+}
+
+.ms-comment-item__time {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.ms-comment-item__text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    word-break: break-word;
+}
+
+.ms-comment-item__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.ms-comment-item:hover .ms-comment-item__actions {
+    opacity: 1;
+}
+
+.ms-comment-item__action-btn {
+    background: none;
+    border: none;
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    transition: color 0.15s, background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+}
+
+.ms-comment-item__action-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-surface-hover);
+}
+
+.ms-comment-item__action-btn.delete {
+    color: #E84040;
+}
+
+.ms-comment-item__action-btn.delete:hover {
+    background: rgba(232, 64, 64, 0.1);
+}
+
+.ms-comment-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 32px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.ms-comment-empty i {
+    font-size: 32px;
+    opacity: 0.4;
+}
+
+.ms-comment-empty p {
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.ms-comment-panel__input-area {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+}
+
+.ms-comment-panel__self-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.ms-comment-panel__input-wrap {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 8px 12px;
+    transition: border-color 0.2s;
+}
+
+.ms-comment-panel__input-wrap:focus-within {
+    border-color: rgba(108, 92, 231, 0.5);
+}
+
+.ms-comment-panel__textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: inherit;
+    resize: none;
+    line-height: 1.5;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.ms-comment-panel__textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.ms-comment-panel__send {
+    background: #6C5CE7;
+    border: none;
+    border-radius: var(--radius-full);
+    width: 32px;
+    height: 32px;
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.ms-comment-panel__send:hover {
+    background: #5a4bcf;
+}
+
+.ms-comment-panel__send:active {
+    transform: scale(0.92);
 }
