@@ -212,6 +212,12 @@ function formatProfileCard($row, $colors) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
+    <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
 </head>
 <body class="profile-page-body">
 
@@ -226,6 +232,10 @@ function formatProfileCard($row, $colors) {
             <button type="button" class="ms-navbar__icon-btn theme-toggle" id="theme-toggle-profile" title="Ubah Tema" onclick="toggleTheme()" style="background:transparent;border:none;cursor:pointer;color:var(--text-secondary);font-size:1.15rem;margin-right:10px;">
                 <i class="fas fa-moon" id="theme-icon-profile"></i>
             </button>
+            <a href="messages.php" class="ms-navbar__icon-btn" data-tippy-content="Pesan" style="position:relative;">
+                <i class="fas fa-paper-plane"></i>
+                <span id="msgBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#E84040;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 3px;"></span>
+            </a>
             <a href="logout.php" class="ms-navbar__icon-btn" title="Logout">
                 <i class="fas fa-sign-out-alt"></i>
             </a>
@@ -257,7 +267,7 @@ function formatProfileCard($row, $colors) {
                         <strong style="font-size:18px;"><?php echo number_format($profile_user['following_count']); ?></strong> <span>Following</span>
                     </button>
                     <button class="ms-profile-stat" onclick="openFollowModal('followers', <?php echo $profile_user['id']; ?>)" style="background:transparent;border:none;color:inherit;font-family:inherit;cursor:pointer;padding:0;">
-                        <strong data-type="followers" style="font-size:18px;"><?php echo number_format($profile_user['followers_count']); ?></strong> <span>Followers</span>
+                        <strong id="followersCountText" data-type="followers" style="font-size:18px;"><?php echo number_format($profile_user['followers_count']); ?></strong> <span>Followers</span>
                     </button>
                     <div class="ms-profile-stat">
                         <strong style="font-size:18px;"><?php echo number_format($profile_user['likes_count']); ?></strong> <span>Likes</span>
@@ -275,10 +285,13 @@ function formatProfileCard($row, $colors) {
                             id="followBtn">
                             <?php echo $is_following ? 'Following' : 'Follow'; ?>
                         </button>
-                        <?php if ($profile_user['role'] === 'creator'): ?>
-                            <button class="ms-btn ms-btn-outline">Message</button>
-                        <?php endif; ?>
-                        <button class="ms-btn ms-btn-icon" title="Share"><i class="fas fa-share"></i></button>
+                        <a href="messages.php?chat_with=<?php echo $profile_id; ?>&name=<?php echo urlencode($profile_user['display_name'] ?? $profile_user['username']); ?>"
+                           style="background:var(--bg-surface);border:1px solid var(--border-color);border-radius:20px;
+                                  color:var(--text-primary);font-size:12px;font-weight:600;padding:7px 18px;
+                                  text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background 0.2s;">
+                            <i class="fas fa-paper-plane"></i> Pesan
+                        </a>
+
                     <?php endif; ?>
                 </div>
                 
@@ -452,11 +465,11 @@ document.addEventListener('DOMContentLoaded', () => openEditModal());
     </div>
     <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:20px;">
         
-        <button id="profileMediaFavBtn" onclick="handleProfileMediaFav()" style="background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:46px;height:46px;color:#FFD600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" title="Favorit"><i class="fas fa-bookmark"></i></button>
+        <button id="profileMediaFavBtn" onclick="handleProfileMediaFav()" style="background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:46px;height:46px;color:#FFD600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" data-tippy-content="Simpan ke Favorit"><i class="fas fa-bookmark"></i></button>
         
         <button onclick="prevProfileMedia()" style="background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.8);width:46px;height:46px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"><i class="fas fa-step-backward"></i></button>
         
-        <button id="profileMediaLikeBtn" onclick="handleProfileMediaLike()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:52px;height:52px;color:#E84040;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" title="Like"><i class="fas fa-heart"></i></button>
+        <button id="profileMediaLikeBtn" onclick="handleProfileMediaLike()" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:52px;height:52px;color:#E84040;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" data-tippy-content="Like"><i class="fas fa-heart"></i></button>
         
         <button onclick="nextProfileMedia()" style="background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.8);width:46px;height:46px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"><i class="fas fa-step-forward"></i></button>
         
@@ -680,3 +693,4 @@ function closeFollowModal() {
 <script src="script.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
+

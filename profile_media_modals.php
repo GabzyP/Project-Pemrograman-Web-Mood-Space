@@ -282,19 +282,7 @@ async function loadVideoComments(kontenId) {
         return;
     }
     
-    const defAv = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3C/svg%3E";
-    list.innerHTML = data.map(c => `
-        <div style="display:flex;gap:8px;margin-bottom:12px;" data-id="${c.id}">
-            <img src="${c.avatar || defAv}" onerror="this.src='${defAv}'"
-                 style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg-surface-active);">
-            <div style="flex:1;">
-                <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:3px;">
-                    <a href="profile.php?id=${c.user_id}" style="color:inherit;text-decoration:none;">@${c.username}</a>
-                </div>
-                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${c.teks}</div>
-            </div>
-        </div>
-    `).join('');
+    list.innerHTML = data.map(c => renderCommentItem(c, currentUserId)).join('');
     list.scrollTop = list.scrollHeight;
 }
 
@@ -804,19 +792,7 @@ async function loadComments(kontenId) {
         return;
     }
     
-    const defAv = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3C/svg%3E";
-    list.innerHTML = data.map(c => `
-        <div style="display:flex;gap:8px;margin-bottom:12px;" data-id="${c.id}">
-            <img src="${c.avatar || defAv}" onerror="this.src='${defAv}'"
-                 style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg-surface-active);">
-            <div style="flex:1;">
-                <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:3px;">
-                    <a href="profile.php?id=${c.user_id}" style="color:inherit;text-decoration:none;">@${c.username}</a>
-                </div>
-                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${c.teks}</div>
-            </div>
-        </div>
-    `).join('');
+    list.innerHTML = data.map(c => renderCommentItem(c, currentUserId)).join('');
     list.scrollTop = list.scrollHeight;
 }
 

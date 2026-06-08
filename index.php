@@ -200,9 +200,13 @@ $isMoodActive = $activeMood !== '';
         </div>
 
         <div class="ms-navbar__right">
-            <button type="button" class="ms-navbar__icon-btn theme-toggle" id="theme-toggle" title="Ubah Tema" onclick="toggleTheme()" style="background:transparent;border:none;cursor:pointer;color:var(--text-secondary);font-size:1.15rem;margin-right:10px;">
+            <button type="button" class="ms-navbar__icon-btn theme-toggle" id="theme-toggle" title="Ubah Tema" onclick="toggleTheme()" style="background:transparent;border:none;cursor:pointer;color:var(--text-secondary);font-size:1.15rem;">
                 <i class="fas fa-moon" id="theme-icon"></i>
             </button>
+            <a href="messages.php" class="ms-navbar__icon-btn" data-tippy-content="Pesan" style="position:relative;">
+                <i class="fas fa-paper-plane"></i>
+                <span id="msgBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#E84040;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 3px;"></span>
+            </a>
             <a href="logout.php" class="ms-navbar__icon-btn" title="Logout">
                 <i class="fas fa-sign-out-alt"></i>
             </a>
