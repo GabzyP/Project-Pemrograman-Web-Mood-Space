@@ -42,9 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sumber = $me['display_name'] ?? $me['username'];
     }
 
-    if ($tipe === 'quote' && empty($judul)) {
-        $judul = "Quote";
-    }
 
     $valid_moods = ['joy','sadness','anger','disgust','fear','anxiety','ennui','embarrassment','envy'];
     $valid_types = ['video','music','quote'];
@@ -278,7 +275,7 @@ setTimeout(function() {
         durasiField.style.display = tipe === 'music' ? 'block' : 'none';
         
         sumberField.style.display = (tipe === 'video' || tipe === 'quote') ? 'none' : 'block';
-        judulField.style.display = tipe === 'quote' ? 'none' : 'block';
+        judulField.style.display = 'block';
     }
     updateFormFields();
     </script>
