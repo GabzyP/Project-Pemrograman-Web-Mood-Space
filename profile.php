@@ -120,7 +120,7 @@ if ($activeTab === 'content' && $profile_user['role'] === 'creator') {
         FROM konten_mood k
         LEFT JOIN users u ON k.uploaded_by = u.id
         WHERE k.uploaded_by = ? 
-        ORDER BY k.created_at DESC LIMIT 100
+        ORDER BY k.created_at DESC LIMIT 150
     ");
     $stmt_content->bind_param("iiii", $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id'], $profile_user['id']);
     $stmt_content->execute();

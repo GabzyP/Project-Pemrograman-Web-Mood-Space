@@ -421,9 +421,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="ms-btn-primary" id="login-btn">Log in</button>
         </form>
 
-        <div class="auth-card__forgot">
-            <a href="#">Forgot password?</a>
-        </div>
     </div>
 
     <div class="auth-bottom">

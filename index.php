@@ -130,6 +130,23 @@ if (!empty($video)) {
     unset($v);
 }
 
+if (!empty($quotes)) {
+    foreach ($quotes as &$q) {
+        $stmt_up = $conn->prepare(
+            "SELECT display_name, username, profile_picture, role FROM users WHERE id = ?"
+        );
+        $stmt_up->bind_param("i", $q['uploaded_by']);
+        $stmt_up->execute();
+        $uploader = $stmt_up->get_result()->fetch_assoc();
+        $stmt_up->close();
+    
+        $q['uploader_name'] = $uploader['display_name'] ?? $uploader['username'] ?? 'Unknown';
+        $q['uploader_avatar'] = getAvatar($uploader['profile_picture'] ?? '');
+        $q['uploader_role'] = $uploader['role'] ?? '';
+    }
+    unset($q);
+}
+
 $currentMoodColor = $moodColors[$activeMood] ?? '#FFD600';
 $currentMoodRGB = $moodColorsRGB[$activeMood] ?? '255, 214, 0';
 $isMoodActive = $activeMood !== '';
@@ -139,7 +156,7 @@ $isMoodActive = $activeMood !== '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MoodSpace — A premium emotion-driven streaming platform inspired by Inside Out 2. Explore music, videos, and quotes based on your mood.">
+    <meta name="description" content="MoodSpace A premium emotion-driven streaming platform inspired by Inside Out 2. Explore music, videos, and quotes based on your mood.">
     <title>MoodSpace — <?php echo $activeMood ? ucfirst(htmlspecialchars($activeMood)) : 'Explore Your Emotions'; ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -931,8 +948,8 @@ async function submitComment() {
 </style>
 
                 <div class="ms-masonry">
-                    <?php foreach ($quotes as $q): ?>
-                    <div class="ms-quote-card">
+                    <?php foreach ($quotes as $q_index => $q): ?>
+                    <div class="ms-quote-card" onclick="if(!event.target.closest('button')) openQuoteModal(<?php echo $q_index; ?>)">
                         <?php if (!empty($q['file_url'])): ?>
                             <img src="<?php echo htmlspecialchars($q['file_url']); ?>" alt="Quote Image" class="ms-quote-card__image">
                         <?php elseif (!empty($q['media_id'])): ?>
@@ -983,10 +1000,11 @@ async function submitComment() {
     </script>
 
 <style>
-#videoModal {
+#videoModal, #quoteModal {
     background: var(--bg-primary);
 }
-body.moodspace-mode #videoModal::before {
+body.moodspace-mode #videoModal::before,
+body.moodspace-mode #quoteModal::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -994,24 +1012,29 @@ body.moodspace-mode #videoModal::before {
     z-index: -1;
     pointer-events: none;
 }
-#videoModal .ms-player-container {
+#videoModal .ms-player-container,
+#quoteModal .ms-player-container {
     transition: transform 0.3s, max-width 0.3s;
     position: relative;
     z-index: 1; 
 }
-#videoModal.ms-video-expanded .video-comment-panel {
+#videoModal.ms-video-expanded .video-comment-panel,
+#quoteModal.ms-video-expanded .quote-comment-panel {
     display: block !important;
 }
 @media (min-width: 861px) {
-    #videoModal.ms-video-expanded .ms-player-container {
+    #videoModal.ms-video-expanded .ms-player-container,
+    #quoteModal.ms-video-expanded .ms-player-container {
         transform: translateX(-180px);
     }
 }
 @media (max-width: 860px) {
-    #videoModal.ms-video-expanded .ms-player-container {
+    #videoModal.ms-video-expanded .ms-player-container,
+    #quoteModal.ms-video-expanded .ms-player-container {
         max-width: 540px !important;
     }
-    #videoModal .video-comment-panel {
+    #videoModal .video-comment-panel,
+    #quoteModal .quote-comment-panel {
         position: relative !important;
         right: 0 !important;
         width: 100% !important;
@@ -1019,7 +1042,8 @@ body.moodspace-mode #videoModal::before {
         height: auto !important;
         max-height: 400px !important;
     }
-    #videoModal .video-comment-panel > div {
+    #videoModal .video-comment-panel > div,
+    #quoteModal .quote-comment-panel > div {
         height: auto !important;
         max-height: 400px !important;
     }
@@ -1152,8 +1176,129 @@ body.moodspace-mode #videoModal::before {
     </div>
 </div>
 
+<div id="quoteModal" style="
+    display:none;
+    position:fixed;inset:0;
+    background:var(--bg-primary);
+    z-index:10000;
+    align-items:center;justify-content:center;
+    overflow-y:auto;
+    padding: 20px 0;
+" onclick="closeQuoteModal(event)">
 
-<script>
+    <button onclick="closeQuoteModal(null, true)" style="
+        position:fixed;top:24px;left:24px;
+        background:none;border:none;color:var(--text-secondary);cursor:pointer;
+        font-size:15px;padding:0;display:inline-flex;align-items:center;gap:8px;
+        font-family:inherit;z-index:10001;font-weight:500;
+    ">
+        <i class="fas fa-chevron-left"></i> Kembali
+    </button>
+
+    <div class="ms-player-container" style="width:90vw; max-width:960px; transition:max-width 0.3s; margin:auto;" id="quotePlayerContainer">
+        <div class="ms-player-left" style="display:flex;flex-direction:column;align-items:center;width:100%;">
+            
+            <div id="quoteCreatorBar" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;width:100%;">
+                <a id="quoteCreatorLink" href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;flex:1;">
+                    <img id="quoteCreatorAvatar" src="" alt=""
+                         style="width:38px;height:38px;border-radius:50%;object-fit:cover;background:#333;flex-shrink:0;">
+                    <div>
+                        <div id="quoteCreatorName" style="color:var(--text-primary);font-size:14px;font-weight:600;"></div>
+                    </div>
+                </a>
+                <button id="quoteFollowBtn"
+                        onclick="handleQuoteFollow()"
+                        style="background:#6C5CE7;border:none;border-radius:20px;color:#fff;
+                               font-size:12px;font-weight:600;padding:7px 18px;cursor:pointer;display:inline-block;">
+                    Follow
+                </button>
+            </div>
+
+            <div id="quoteModalTitle" style="
+                color:var(--text-primary);font-size:16px;font-weight:600;
+                margin-bottom:16px;text-align:center;
+                width:100%;opacity:0.9;
+            "></div>
+
+            <div style="position:relative;width:100%;">
+                <img id="modalQuoteImg" src="" style="
+                    width:100%;border-radius:12px;
+                    max-height:75vh;background:#000;
+                    display:block;object-fit:contain;
+                ">
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-top:20px;width:100%;">
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:14px;">
+                    <button id="quoteFavBtn" onclick="handleQuoteFav()"
+                            style="background:var(--bg-surface);border:none;border-radius:50%;
+                                   width:46px;height:46px;color:var(--text-secondary);font-size:14px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+                            title="Favorit">
+                        <i class="fas fa-bookmark"></i>
+                    </button>
+                    <button onclick="prevQuote()"
+                            style="background:var(--bg-surface);border:none;color:var(--text-secondary);
+                                   width:46px;height:46px;border-radius:50%;font-size:16px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;transition:all 0.2s;">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                </div>
+
+                <div style="display:flex;justify-content:center;padding:0 14px;">
+                    <button id="quoteLikeBtn" onclick="handleQuoteLike()"
+                            style="background:var(--bg-surface);border:none;border-radius:50%;
+                                   width:52px;height:52px;color:var(--text-secondary);font-size:20px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+                            title="Like">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:flex-start;gap:14px;">
+                    <button onclick="nextQuote()"
+                            style="background:var(--bg-surface);border:none;color:var(--text-secondary);
+                                   width:46px;height:46px;border-radius:50%;font-size:16px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;transition:all 0.2s;">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button onclick="toggleQuoteCommentPanel()"
+                            style="background:var(--bg-surface);border:none;border-radius:50%;
+                                   width:46px;height:46px;color:var(--text-secondary);font-size:18px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+                            title="Komentar">
+                        <i class="fas fa-comment-dots"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="ms-player-right quote-comment-panel" style="display:none; position:absolute; right:-380px; top:0; width:360px; height:100%; z-index:100;">
+            <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:20px;display:flex;flex-direction:column;height:100%;max-height:75vh;">
+                <div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-comment"></i>
+                    <span id="quoteCommentCount">Komentar</span>
+                </div>
+                <div id="quoteCommentList" style="flex:1;overflow-y:auto;margin-bottom:16px;padding-right:8px;"></div>
+                <div style="display:flex;gap:10px;align-items:center;margin-top:auto;">
+                    <input id="quoteCommentInput" type="text" placeholder="Tulis komentar..."
+                           maxlength="500"
+                           style="flex:1;background:var(--bg-surface);border:1px solid var(--border-color);
+                                  border-radius:24px;padding:12px 16px;color:var(--text-primary);font-size:13px;
+                                  outline:none;font-family:inherit;"
+                           onkeydown="if(event.key==='Enter') submitQuoteComment()">
+                    <button onclick="submitQuoteComment()"
+                            style="background:#6C5CE7;border:none;border-radius:50%;width:42px;height:42px;
+                                   color:#fff;font-size:15px;cursor:pointer;flex-shrink:0;
+                                   display:flex;align-items:center;justify-content:center;transition:background 0.2s;"
+                            onmouseover="this.style.background='#5a4bcf'" onmouseout="this.style.background='#6C5CE7'">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div><script>
 const currentUserId = <?php echo isset($me['id']) ? $me['id'] : 0; ?>;
 const videoList = <?php echo json_encode(array_values(array_filter(array_map(function($v) {
     if (empty($v['file_url'])) return null;
@@ -1170,7 +1315,23 @@ const videoList = <?php echo json_encode(array_values(array_filter(array_map(fun
         'user_favorited' => !empty($v['user_favorited']) ? 1 : 0,
         'user_followed'  => !empty($v['user_followed']) ? 1 : 0,
     ];
-}, $video)))); ?>;
+}, $video ?? [])))); ?>;
+
+const quoteList = <?php echo json_encode(array_values(array_filter(array_map(function($q) {
+    if (empty($q['file_url']) && empty($q['media_id'])) return null;
+    return [
+        'id'             => $q['id'],
+        'judul'          => $q['judul'] ?? 'Quote',
+        'file_url'       => $q['file_url'] ?? $q['media_id'],
+        'uploader_id'    => $q['uploaded_by'],
+        'uploader_name'  => $q['uploader_name'] ?? 'Unknown',
+        'uploader_avatar'=> $q['uploader_avatar'] ?? '',
+        'uploader_role'  => $q['uploader_role'] ?? '',
+        'user_liked'     => !empty($q['user_liked']) ? 1 : 0,
+        'user_favorited' => !empty($q['user_favorited']) ? 1 : 0,
+        'user_followed'  => !empty($q['user_followed']) ? 1 : 0,
+    ];
+}, $quotes ?? [])))); ?>;
 
 let currentVideoIndex = 0;
 const modalEl = document.getElementById('videoModal');
@@ -1367,7 +1528,8 @@ function handleVideoFollow() {
       .then(data => {
           v.user_followed = data.status === 'followed' ? 1 : 0;
           const followBtn = document.getElementById('videoFollowBtn');
-          const followBtnMobile = document.getElementById('videoCreatorMobile').querySelector('button');
+          const creatorMobileEl = document.getElementById('videoCreatorMobile');
+          const followBtnMobile = creatorMobileEl ? creatorMobileEl.querySelector('button') : null;
           if (followBtn) {
               followBtn.textContent = v.user_followed ? 'Followed' : 'Follow';
               followBtn.style.background = v.user_followed ? 'rgba(255,255,255,0.15)' : '#6C5CE7';
@@ -1383,14 +1545,224 @@ function handleVideoFollow() {
 }
 
 document.addEventListener('keydown', function(e) {
-    if (!modalEl || modalEl.style.display !== 'flex') return;
-    if (e.key === 'Escape') closeVideoModal(null, true);
-    if (e.key === 'ArrowLeft') prevVideo();
-    if (e.key === 'ArrowRight') nextVideo();
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        if (e.key === 'Escape') e.target.blur();
+        return;
+    }
+    
+    if (modalEl && modalEl.style.display === 'flex') {
+        if (e.key === 'Escape') closeVideoModal(null, true);
+        if (e.key === 'ArrowLeft') prevVideo();
+        if (e.key === 'ArrowRight') nextVideo();
+    } else if (quoteModalEl && quoteModalEl.style.display === 'flex') {
+        if (e.key === 'Escape') closeQuoteModal(null, true);
+        if (e.key === 'ArrowLeft') prevQuote();
+        if (e.key === 'ArrowRight') nextQuote();
+    }
 });
 
 if (modalVideo) {
     modalVideo.addEventListener('ended', nextVideo);
+}
+
+let currentQuoteIndex = 0;
+const quoteModalEl = document.getElementById('quoteModal');
+const modalQuoteImg = document.getElementById('modalQuoteImg');
+const quoteModalTitle = document.getElementById('quoteModalTitle');
+
+function openQuoteModal(index) {
+    if (!quoteList || !quoteList.length) return;
+    
+    currentQuoteIndex = index;
+    const q = quoteList[index];
+    if (!q) return;
+    
+    modalQuoteImg.src = q.file_url;
+    quoteModalTitle.textContent = q.judul;
+    
+    const creatorProfileUrl = 'profile.php?id=' + q.uploader_id;
+    document.getElementById('quoteCreatorLink').href = creatorProfileUrl;
+    document.getElementById('quoteCreatorName').innerHTML = q.uploader_name + (q.uploader_role === 'creator' ? ' <i class="fas fa-check-circle" style="color:#6C5CE7;font-size:12px;"></i>' : '');
+    const defAv = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3C/svg%3E";
+    document.getElementById('quoteCreatorAvatar').src = q.uploader_avatar || defAv;
+    
+    const likeBtn = document.getElementById('quoteLikeBtn');
+    const favBtn = document.getElementById('quoteFavBtn');
+    likeBtn.style.color = q.user_liked ? '#E84040' : 'var(--text-secondary)';
+    likeBtn.style.background = q.user_liked ? 'rgba(232,64,64,0.2)' : 'var(--bg-surface)';
+    favBtn.style.color = q.user_favorited ? '#FFD600' : 'var(--text-secondary)';
+    favBtn.style.background = q.user_favorited ? 'rgba(255,214,0,0.15)' : 'var(--bg-surface)';
+
+    const followBtn = document.getElementById('quoteFollowBtn');
+    const isFollowedInitial = q.user_followed === 1;
+    const isSelf = Number(q.uploader_id) === Number(currentUserId);
+    if (followBtn) {
+        if (isSelf) {
+            followBtn.style.display = 'none';
+        } else {
+            followBtn.style.display = 'inline-block';
+            followBtn.textContent = isFollowedInitial ? 'Followed' : 'Follow';
+            followBtn.style.background = isFollowedInitial ? 'var(--bg-surface-active)' : '#6C5CE7';
+            followBtn.style.color = isFollowedInitial ? 'var(--text-primary)' : '#fff';
+            followBtn.style.border = 'none';
+        }
+    }
+    
+    loadQuoteComments(q.id);
+    
+    quoteModalEl.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeQuoteModal(e, force) {
+    if (!force && e && e.target !== quoteModalEl) return;
+    if (modalQuoteImg) {
+        modalQuoteImg.src = '';
+    }
+    if (quoteModalEl) {
+        quoteModalEl.style.display = 'none';
+        quoteModalEl.classList.remove('ms-video-expanded');
+    }
+    document.body.style.overflow = '';
+}
+
+function toggleQuoteCommentPanel() {
+    quoteModalEl.classList.toggle('ms-video-expanded');
+}
+
+function prevQuote() {
+    if (!quoteList || !quoteList.length) return;
+    let newIndex = currentQuoteIndex - 1;
+    if (newIndex < 0) newIndex = quoteList.length - 1;
+    openQuoteModal(newIndex);
+}
+
+function nextQuote() {
+    if (!quoteList || !quoteList.length) return;
+    let newIndex = currentQuoteIndex + 1;
+    if (newIndex >= quoteList.length) newIndex = 0;
+    openQuoteModal(newIndex);
+}
+
+async function loadQuoteComments(kontenId) {
+    const list = document.getElementById('quoteCommentList');
+    if (!list) return;
+    list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px;"><i class="fas fa-spinner fa-spin"></i></div>';
+    
+    try {
+        const res  = await fetch('api_komentar.php?konten_id=' + kontenId);
+        const data = await res.json();
+        
+        document.getElementById('quoteCommentCount').textContent = 'Komentar (' + data.length + ')';
+        
+        if (!data.length) {
+            list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px;">Belum ada komentar. Jadilah yang pertama!</div>';
+            return;
+        }
+        
+        const defAv = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23555'/%3E%3C/svg%3E";
+        list.innerHTML = data.map(c => `
+            <div style="display:flex;gap:8px;margin-bottom:12px;" data-id="${c.id}">
+                <img src="${c.avatar || defAv}" onerror="this.src='${defAv}'"
+                     style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg-surface-active);">
+                <div style="flex:1;">
+                    <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:3px;">
+                        <a href="profile.php?id=${c.user_id}" style="color:inherit;text-decoration:none;">@${c.username}</a>
+                    </div>
+                    <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${c.teks}</div>
+                </div>
+            </div>
+        `).join('');
+        list.scrollTop = list.scrollHeight;
+    } catch(err) {
+        list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Gagal memuat komentar</div>';
+    }
+}
+
+async function submitQuoteComment() {
+    const inp = document.getElementById('quoteCommentInput');
+    const val = inp.value.trim();
+    if (!val) return;
+    const q = quoteList[currentQuoteIndex];
+    if (!q) return;
+    
+    inp.disabled = true;
+    const res = await fetch('api_komentar.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({konten_id: q.id, teks: val})
+    });
+    const data = await res.json();
+    
+    inp.value = '';
+    inp.disabled = false;
+    
+    if (data.success) {
+        loadQuoteComments(q.id);
+    } else {
+        alert(data.message || 'Gagal mengirim komentar');
+    }
+}
+
+async function handleQuoteLike() {
+    const q = quoteList[currentQuoteIndex];
+    if (!q) return;
+    const formData = new FormData();
+    formData.append('action', 'like');
+    formData.append('konten_id', q.id);
+    const res = await fetch('api_action.php', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.success) {
+        q.user_liked = data.status === 'added' ? 1 : 0;
+        const likeBtn = document.getElementById('quoteLikeBtn');
+        likeBtn.style.color = q.user_liked ? '#E84040' : 'var(--text-secondary)';
+        likeBtn.style.background = q.user_liked ? 'rgba(232,64,64,0.2)' : 'var(--bg-surface)';
+    }
+}
+
+async function handleQuoteFav() {
+    const q = quoteList[currentQuoteIndex];
+    if (!q) return;
+    const formData = new FormData();
+    formData.append('action', 'favorite');
+    formData.append('konten_id', q.id);
+    const res = await fetch('api_action.php', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.success) {
+        q.user_favorited = data.status === 'added' ? 1 : 0;
+        const favBtn = document.getElementById('quoteFavBtn');
+        favBtn.style.color = q.user_favorited ? '#FFD600' : 'var(--text-secondary)';
+        favBtn.style.background = q.user_favorited ? 'rgba(255,214,0,0.15)' : 'var(--bg-surface)';
+    }
+}
+
+async function handleQuoteFollow() {
+    const q = quoteList[currentQuoteIndex];
+    if (!q) return;
+    const targetId = q.uploader_id;
+    if (Number(targetId) === Number(currentUserId)) return;
+    
+    const formData = new FormData();
+    formData.append('action', 'follow');
+    formData.append('target_id', targetId);
+    const res = await fetch('api_action.php', { method: 'POST', body: formData });
+    const data = await res.json();
+    
+    if (data.success) {
+        q.user_followed = data.status === 'followed' ? 1 : 0;
+        const followBtn = document.getElementById('quoteFollowBtn');
+        if (followBtn) {
+            followBtn.textContent = q.user_followed ? 'Followed' : 'Follow';
+            followBtn.style.background = q.user_followed ? 'var(--bg-surface-active)' : '#6C5CE7';
+            followBtn.style.color = q.user_followed ? 'var(--text-primary)' : '#fff';
+            followBtn.style.border = 'none';
+        }
+        quoteList.forEach(item => {
+            if (Number(item.uploader_id) === Number(targetId)) item.user_followed = q.user_followed;
+        });
+    } else {
+        alert(data.message || 'Error following user');
+    }
 }
 </script>
 
